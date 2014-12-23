@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.core.Response;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -144,4 +145,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
         }
     }
 
+    protected boolean isUnhealthyResponse(Response response) {
+        return response.getStatus() < 200 || response.getStatus() >= 300;
+    }
 }

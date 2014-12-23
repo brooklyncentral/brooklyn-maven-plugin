@@ -20,6 +20,8 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.ws.rs.core.Response;
 
 import org.apache.maven.plugin.MojoFailureException;
@@ -86,26 +88,35 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             getLog().debug("Deploy blueprint: responseCode=" + r.getStatus());
             final TaskSummary task = BrooklynApi.getEntity(r, TaskSummary.class);
             final String appId = task.getEntityId();
-            getLog().info("Waiting for application " + appId + " to be running");
-            boolean isAppRunning = Repeater.create("Waiting for application " + appId + " to be running")
+
+            getLog().info("Waiting " + getTimeout() + " from " + new Date() + " for application " + appId + " to be running");
+            final AtomicReference<Status> appStatus = new AtomicReference<Status>(Status.UNKNOWN);
+
+            // Poll Brooklyn until the deployed app is running or on fire.
+            boolean finalAppStatusKnown = Repeater.create("Waiting for application " + appId + " to be running")
                     .every(getPollPeriod())
                     .limitTimeTo(getTimeout())
+                    .rethrowExceptionImmediately()
                     .until(new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
                             ApplicationSummary app = getApi().getApplicationApi().get(appId);
-                            return Status.RUNNING.equals(app.getStatus());
+                            Status status = app.getStatus();
+                            appStatus.set(status);
+                            return Status.RUNNING.equals(status) || Status.ERROR.equals(status);
                         }
                     })
                     .run();
 
-            if (isAppRunning) {
+            switch (appStatus.get()) {
+            case RUNNING:
                 getLog().info("Application " + appId + " is running");
                 if (propertyName != null) {
                     getProject().getProperties().setProperty(propertyName, task.getEntityId());
                 }
-            } else {
-                throw new MojoFailureException("Application " + appId + " is not running within " + getTimeout());
+                break;
+            default:
+                throw new MojoFailureException("Application is not running within " + getTimeout() + ". Status is: " + appStatus.get());
             }
         } catch (MojoFailureException e) {
             throw e;

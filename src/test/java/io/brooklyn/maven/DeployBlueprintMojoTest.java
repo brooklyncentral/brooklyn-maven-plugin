@@ -158,4 +158,21 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 
     }
 
+    @Test
+    public void testBailsOutIfDeployedAppIsOnFire() throws Exception {
+        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("ERROR"));
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
+        mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
+
+        try {
+            executeMojoWithTimeout(mojo, 20, TimeUnit.MINUTES);
+        } catch (MojoFailureException e) {
+            assertTrue("Expected exception message to contain 'ERROR', is: " + e.getMessage(),
+                    e.getMessage().contains("ERROR"));
+        }
+    }
+
 }
