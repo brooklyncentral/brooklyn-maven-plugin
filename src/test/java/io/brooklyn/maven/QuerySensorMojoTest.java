@@ -33,7 +33,7 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
 
     @Test
     public void testMojoQueriesSensorValueAndSetsPropertyOnProject() throws Exception {
-        final String sensorVal = "bananaman";
+        final String sensorVal = "Bananaman";
         server.enqueue(newJsonResponse()
                 .setBody(Jsonya.newInstance().put(APPLICATION, sensorVal).toString()));
         server.play();
