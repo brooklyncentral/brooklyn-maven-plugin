@@ -18,10 +18,10 @@ package io.brooklyn.maven;
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.ws.rs.core.Response;
 
 import org.apache.maven.plugin.MojoFailureException;
@@ -113,6 +113,9 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
                 getLog().info("Application " + appId + " is running");
                 if (propertyName != null) {
                     getProject().getProperties().setProperty(propertyName, task.getEntityId());
+                    getLog().debug("Set property '" + propertyName + "' to: " + appId);
+                } else {
+                    getLog().info("No property to set to new application ID");
                 }
                 break;
             default:

@@ -1,0 +1,5 @@
+name: Deploy goal test
+location: localhost
+services:
+- type: brooklyn.entity.machine.MachineEntity
+- type: brooklyn.entity.basic.EmptySoftwareProcess

@@ -34,6 +34,7 @@
         <brooklyn.version>0.7.0-SNAPSHOT</brooklyn.version>
         <compiler.version>3.1</compiler.version>
         <maven.version>3.2.5</maven.version>
+        <maven-verifier.version>1.5</maven-verifier.version>
         <mockwebserver.version>2.1.0</mockwebserver.version>
         <plugin-annotations.version>3.3</plugin-annotations.version>
         <plugin-testing.version>3.2.0</plugin-testing.version>
@@ -92,6 +93,11 @@
             <artifactId>mockwebserver</artifactId>
             <version>${mockwebserver.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-verifier</artifactId>
+            <version>${maven-verifier.version}</version>
         </dependency>
     </dependencies>
 
