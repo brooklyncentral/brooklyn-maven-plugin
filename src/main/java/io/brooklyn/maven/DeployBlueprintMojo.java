@@ -30,7 +30,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.google.common.base.Joiner;
+import com.google.common.io.CharSource;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 import brooklyn.rest.client.BrooklynApi;
 import brooklyn.rest.domain.ApplicationSummary;
@@ -138,7 +140,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
                 throw new MojoFailureException("Unable to read blueprint from " + f.getAbsolutePath());
             }
         } else {
-            throw new IllegalArgumentException("URL not implemented yet");
+            return readUrl(blueprint);
         }
     }
 
@@ -149,6 +151,16 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             return Joiner.on('\n').join(lines);
         } catch (Exception e) {
             throw new MojoFailureException("Failed to load " + file.getAbsolutePath(), e);
+        }
+    }
+
+    private String readUrl(String blueprint) throws MojoFailureException {
+        try {
+            // todo: inject encoding from the pom
+            CharSource source = Resources.asCharSource(new URL(blueprint), Charset.forName("UTF-8"));
+            return Joiner.on("\n").join(source.readLines());
+        } catch (Exception e) {
+            throw new MojoFailureException("Failed to load " + blueprint, e);
         }
     }
 

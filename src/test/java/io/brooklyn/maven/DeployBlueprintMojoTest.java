@@ -98,7 +98,6 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
                 APP_ID, project.getProperties().getProperty(NEW_APP_PROPERTY));
     }
 
-    @Ignore("unimplemented")
     @Test
     public void testLoadsBlueprintFromUrl() throws Exception {
         // Pretending to be both the server hosting the blueprint and Brooklyn.
@@ -107,17 +106,19 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         server.enqueue(applicationStatusResponse("RUNNING"));
         server.play();
 
-        final String blueprintUrl = server.getUrl("/a/path/to/a/blueprint.yaml").toString();
-        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintUrl, NEW_APP_PROPERTY);
+        final String blueprintPath = "/a/path/to/a/blueprint.yaml";
+        final String blueprintUrl = server.getUrl(blueprintPath).toString();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintUrl);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
         executeMojoWithTimeout(mojo);
 
         // Mojo loads blueprint
         RecordedRequest request = server.takeRequest();
-        assertEquals(blueprintUrl, request.getPath());
+        assertEquals(blueprintPath, request.getPath());
         assertEquals("GET", request.getMethod());
 
         // Then posts it to the server
+        request = server.takeRequest();
         assertEquals("/v1/applications", request.getPath());
         assertEquals("POST", request.getMethod());
         assertEquals(YAML, new String(request.getBody()));
