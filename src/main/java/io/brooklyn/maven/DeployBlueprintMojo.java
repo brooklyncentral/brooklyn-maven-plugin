@@ -95,8 +95,13 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             String loadedBlueprint = loadBlueprint();
             getLog().debug("Blueprint:\n" + loadedBlueprint);
             Response r = getApi().getApplicationApi().createFromYaml(loadedBlueprint);
-            // TODO: Worth acting on non 2xx response code?
-            getLog().debug("Deploy blueprint: responseCode=" + r.getStatus());
+
+            if (isUnhealthyResponse(r)) {
+                throw new MojoFailureException("Unexpected response deploying blueprint to server: " + r.getStatus());
+            } else {
+                getLog().debug("Server response to deploy blueprint: " + r.getStatus());
+            }
+
             final TaskSummary task = BrooklynApi.getEntity(r, TaskSummary.class);
             final String appId = task.getEntityId();
 

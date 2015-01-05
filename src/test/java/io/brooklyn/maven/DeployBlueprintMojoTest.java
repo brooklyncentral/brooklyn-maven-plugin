@@ -16,6 +16,7 @@
 package io.brooklyn.maven;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -150,7 +151,19 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         } catch (MojoFailureException e) {
             // ignored
         }
+    }
 
+    @Test
+    public void testBailsIfServerRespondsWithError() throws Exception {
+        server.enqueue(newJsonResponse().setResponseCode(401).setBody("{\"message\": \"Unauthorized\"}"));
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
+        try {
+            executeMojoWithTimeout(mojo);
+        } catch (MojoFailureException e) {
+            assertTrue("Expected exception message to contain 401 status code",
+                    e.getMessage().contains("401"));
+        }
     }
 
     @Test
