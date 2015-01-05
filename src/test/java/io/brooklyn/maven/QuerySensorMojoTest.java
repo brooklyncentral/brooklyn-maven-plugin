@@ -16,7 +16,9 @@
 package io.brooklyn.maven;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
@@ -50,6 +52,19 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
         assertEquals("GET", request.getMethod());
         assertEquals(sensorVal, mavenProject.getProperties().getProperty(PROJECT_PROPERTY));
         assertEquals(1, server.getRequestCount());
+    }
+
+    @Test
+    public void testBuildFailsIfNoEntitiesMatchRegex() throws Exception {
+        server.enqueue(newJsonResponse().setBody("{}"));
+        server.play();
+        QuerySensorMojo mojo = new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+        try {
+            executeMojoWithTimeout(mojo);
+            fail("Expected exception running query goal with no results");
+        } catch (MojoFailureException e) {
+            // ignored
+        }
     }
 
 }

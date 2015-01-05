@@ -83,6 +83,10 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
     public void execute() throws MojoFailureException {
         Map<String, Object> matches = getApi().getEntityApi().getDescendantsSensor(
                 application, application, sensor, typeRegex);
+        if (matches.isEmpty()) {
+            throw new MojoFailureException("No entities in " + application + " matching " + typeRegex +
+                    " have a value for " + sensor);
+        }
         getLog().info("Matches: " + Joiner.on(", ").withKeyValueSeparator("=").join(matches));
         String value;
         if (matches.keySet().size() == 1) {
