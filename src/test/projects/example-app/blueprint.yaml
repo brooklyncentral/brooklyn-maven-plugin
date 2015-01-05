@@ -2,5 +2,4 @@ name: My Blueprint
 location: localhost
 services:
 - type: brooklyn.entity.basic.EmptySoftwareProcess
-- type: brooklyn.entity.nosql.redis.RedisStore
-
+- type: brooklyn.entity.webapp.tomcat.TomcatServer
