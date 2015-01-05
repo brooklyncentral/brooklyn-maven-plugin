@@ -169,10 +169,23 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
 
         try {
-            executeMojoWithTimeout(mojo, 20, TimeUnit.MINUTES);
+            executeMojoWithTimeout(mojo);
         } catch (MojoFailureException e) {
             assertTrue("Expected exception message to contain 'ERROR', is: " + e.getMessage(),
                     e.getMessage().contains("ERROR"));
+        }
+    }
+
+    @Test
+    public void testFailsIfGivenNonsenseCharset() throws Exception {
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
+        mojo.setBlueprintEncoding("post-modern");
+        try {
+            mojo.execute();
+            fail("Expected exception when running mojo with nonsense charset");
+        } catch (MojoFailureException e) {
+            // ignored
         }
     }
 

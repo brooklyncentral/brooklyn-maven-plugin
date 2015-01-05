@@ -56,6 +56,14 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
     private String blueprint;
 
     /**
+     * The encoding of the blueprint to deploy.
+     */
+    @Parameter(
+            property = "brooklyn.blueprintEncoding",
+            defaultValue = "UTF-8")
+    private String blueprintEncoding;
+
+    /**
      * The property to set to the application id.
      */
     @Parameter(defaultValue = "brooklyn.app")
@@ -75,6 +83,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
     public DeployBlueprintMojo(URL server, String blueprint, String propertyName) {
         super(server);
         this.blueprint = blueprint;
+        this.blueprintEncoding = "UTF-8";
         this.propertyName = propertyName;
     }
 
@@ -130,6 +139,10 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
         }
     }
 
+    void setBlueprintEncoding(String encoding) {
+        this.blueprintEncoding = encoding;
+    }
+
     private String loadBlueprint() throws MojoFailureException {
         File f = new File(blueprint);
         if (f.isFile()) {
@@ -146,8 +159,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
 
     private String readFile(File file) throws MojoFailureException {
         try {
-            // todo: inject encoding from the pom
-            List<String> lines = Files.readLines(file, Charset.forName("UTF-8"));
+            List<String> lines = Files.readLines(file, Charset.forName(blueprintEncoding));
             return Joiner.on('\n').join(lines);
         } catch (Exception e) {
             throw new MojoFailureException("Failed to load " + file.getAbsolutePath(), e);
@@ -156,8 +168,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
 
     private String readUrl(String blueprint) throws MojoFailureException {
         try {
-            // todo: inject encoding from the pom
-            CharSource source = Resources.asCharSource(new URL(blueprint), Charset.forName("UTF-8"));
+            CharSource source = Resources.asCharSource(new URL(blueprint), Charset.forName(blueprintEncoding));
             return Joiner.on("\n").join(source.readLines());
         } catch (Exception e) {
             throw new MojoFailureException("Failed to load " + blueprint, e);
