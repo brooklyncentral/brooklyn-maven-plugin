@@ -48,10 +48,12 @@ public abstract class AbstractBrooklynMojoTest {
 
     /**
      * Executes the given mojo and fails if it does not succeed in a timely manner.
+     *
      * @see io.brooklyn.maven.AbstractInvokeBrooklynMojo#setPollPeriod(int, TimeUnit)
      */
     protected void executeMojoWithTimeout(AbstractMojo mojo) throws Exception {
-        executeMojoWithTimeout(mojo, 2, TimeUnit.SECONDS);
+        // The timeout is overkill on a normal machine but plausible on Travis, etc.
+        executeMojoWithTimeout(mojo, 4, TimeUnit.SECONDS);
     }
 
     /**

@@ -120,19 +120,22 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
         return Duration.of(timeout, timeoutUnit);
     }
 
-    void setPollPeriod(int period, TimeUnit unit) {
+    AbstractInvokeBrooklynMojo setPollPeriod(int period, TimeUnit unit) {
         this.pollPeriod = checkNotNull(period, "period");
         this.pollUnit = checkNotNull(unit, "unit");
+        return this;
     }
 
     @VisibleForTesting
-    void setProject(MavenProject project) {
+    AbstractInvokeBrooklynMojo setProject(MavenProject project) {
         this.project = project;
+        return this;
     }
 
-    void setTimeout(int timeout, TimeUnit unit) {
+    AbstractInvokeBrooklynMojo setTimeout(int timeout, TimeUnit unit) {
         this.timeout = checkNotNull(timeout, "timeout");
         this.timeoutUnit = checkNotNull(unit, "unit");
+        return this;
     }
 
     /**

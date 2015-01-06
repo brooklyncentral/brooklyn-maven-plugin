@@ -160,16 +160,30 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
         try {
             executeMojoWithTimeout(mojo);
+            fail("Expected mojo to throw an exception when server responds 401");
         } catch (MojoFailureException e) {
-            assertTrue("Expected exception message to contain 401 status code",
+            assertTrue("Expected exception message to contain 401 status code, was: " + e.getMessage(),
                     e.getMessage().contains("401"));
         }
     }
 
     @Test
-    @Ignore("Unimplemented")
-    public void testTimeouts() {
-
+    public void testDeployFailsIfAppStartTakesTooLong() throws Exception {
+        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
+        mojo.setPollPeriod(1, TimeUnit.MILLISECONDS)
+                .setTimeout(2, TimeUnit.MILLISECONDS);
+        try {
+            executeMojoWithTimeout(mojo);
+            fail("Expected mojo to throw when app start takes too long");
+        } catch (MojoFailureException e) {
+            assertTrue("Expected exception message to correspond to timeout. Was: " + e.getMessage(),
+                    e.getMessage().contains("Application is not running within"));
+        }
     }
 
     @Test
