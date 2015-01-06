@@ -6,19 +6,40 @@ Brooklyn](https://brooklyn.incubator.apache.org/) blueprints.
 
 ### Download
 
-The plugin is not currently published to Maven repositories.  For now you must
-clone and install this project yourself.
-
-<!-- Enable when plugin published.
-Include this dependency in your pom:
+Include this plugin in your pom:
 ```xml
-<dependency>
+<plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>(insert latest version)</version>
-</dependency>
+    <version>0.1.0-SNAPSHOT</version>
+</plugin>
 ```
--->
+
+And these plugin repositories:
+```xml
+<pluginRepositories>
+    <pluginRepository>
+        <id>apache-snapshots</id>
+        <url>https://repository.apache.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+        <id>cloudsoft-snapshot</id>
+        <url>http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local/</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
+```
 
 ### Goals
 
