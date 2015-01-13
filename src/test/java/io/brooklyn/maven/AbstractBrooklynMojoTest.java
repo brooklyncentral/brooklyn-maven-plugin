@@ -34,6 +34,12 @@ import brooklyn.util.collections.Jsonya;
 
 public abstract class AbstractBrooklynMojoTest {
 
+    /**
+     * Set as a system property to configure the time waited by
+     * {@link #executeMojoWithTimeout(AbstractMojo)}.
+     */
+    private static final String TIMEOUT_PROPERTY = "brooklyn.test.timeout";
+
     MockWebServer server;
 
     @Before
@@ -48,12 +54,19 @@ public abstract class AbstractBrooklynMojoTest {
 
     /**
      * Executes the given mojo and fails if it does not succeed in a timely manner.
+     * The timeout can be injected by setting {@link #TIMEOUT_PROPERTY} as a system
+     * property.
      *
      * @see io.brooklyn.maven.AbstractInvokeBrooklynMojo#setPollPeriod(int, TimeUnit)
      */
     protected void executeMojoWithTimeout(AbstractMojo mojo) throws Exception {
+        String configuredTimeout = System.getProperty(TIMEOUT_PROPERTY);
+        Integer timeout = configuredTimeout != null
+                ? Integer.valueOf(configuredTimeout)
+                : 2;
+
         // The timeout is overkill on a normal machine but plausible on Travis, etc.
-        executeMojoWithTimeout(mojo, 4, TimeUnit.SECONDS);
+        executeMojoWithTimeout(mojo, timeout, TimeUnit.SECONDS);
     }
 
     /**
@@ -76,11 +89,11 @@ public abstract class AbstractBrooklynMojoTest {
             }
         };
         t.start();
-        latch.await(timeout, unit);
+        boolean threadComplete = latch.await(timeout, unit);
         if (exception.get() != null) {
             if (t.isAlive()) t.interrupt();
             throw exception.get();
-        } else if (t.isAlive()) {
+        } else if (!threadComplete) {
             t.interrupt();
             fail(mojo + " incomplete after " + timeout + " " + unit.name().toLowerCase());
         }
