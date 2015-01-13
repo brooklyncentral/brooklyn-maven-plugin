@@ -132,6 +132,16 @@
             <groupId>org.apache.brooklyn</groupId>
             <artifactId>brooklyn-rest-client</artifactId>
             <version>${brooklyn.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.brooklyn</groupId>
+                    <artifactId>brooklyn-utils-rest-swagger</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.wordnik</groupId>
+                    <artifactId>swagger-core_2.9.1</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.brooklyn</groupId>
