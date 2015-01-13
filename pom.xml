@@ -21,8 +21,14 @@
 
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <packaging>maven-plugin</packaging>
     <version>0.1.0-SNAPSHOT</version>
+    <packaging>maven-plugin</packaging>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
 
     <name>Brooklyn Maven Plugin</name>
     <description>
@@ -67,20 +73,6 @@
         <system>GitHub Issues</system>
         <url>https://github.com/brooklyncentral/brooklyn-maven-plugin/issues</url>
     </issueManagement>
-
-    <distributionManagement>
-        <repository>
-            <id>cloudsoft-release</id>
-            <name>cloudsoft-release</name>
-            <url>http://ccweb.cloudsoftcorp.com/maven/libs-release-local/</url>
-        </repository>
-        <snapshotRepository>
-            <id>cloudsoft-snapshot</id>
-            <name>cloudsoft-snapshot</name>
-            <url>http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local</url>
-            <uniqueVersion>true</uniqueVersion>
-        </snapshotRepository>
-    </distributionManagement>
 
     <repositories>
         <repository>
@@ -255,4 +247,32 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
