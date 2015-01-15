@@ -26,6 +26,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 
+import brooklyn.rest.domain.Status;
+
 /**
  * Fetch the value of a sensor on entities at a given server whose types
  * match a regular expression.
@@ -65,6 +67,21 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
     private String typeRegex;
 
     /**
+     * Configure the plugin to fail the build if no entities in the application have a
+     * sensor with the given name.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean failIfNoMatches;
+
+    /**
+     * Configure the plugin to wait for the application to be {@link Status#RUNNING running}
+     * before retrieving sensor values or to throw a {@link MojoFailureException} if it is
+     * not running within the configured {@link #timeout}.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean waitForRunning;
+
+    /**
      * Constructor for use by Maven/Guice.
      */
     QuerySensorMojo() {
@@ -81,9 +98,12 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
 
     @Override
     public void execute() throws MojoFailureException {
+        if (waitForRunning) {
+            waitForAppStatusOrThrow(application, Status.RUNNING);
+        }
         Map<String, Object> matches = getApi().getEntityApi().getDescendantsSensor(
                 application, application, sensor, typeRegex);
-        if (matches.isEmpty()) {
+        if (failIfNoMatches && matches.isEmpty()) {
             throw new MojoFailureException("No entities in " + application + " matching " + typeRegex +
                     " have a value for " + sensor);
         }
@@ -96,6 +116,14 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
         }
         getLog().debug("Setting " + propertyName + " to " + value);
         getProject().getProperties().setProperty(propertyName, value);
+    }
+
+    void setWaitForRunning() {
+        this.waitForRunning = true;
+    }
+
+    void setFailIfNoMatches() {
+        this.failIfNoMatches = true;
     }
 
 }

@@ -17,6 +17,8 @@ package io.brooklyn.maven;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Test;
 
 import com.squareup.okhttp.mockwebserver.MockResponse;
@@ -34,7 +36,7 @@ public class StopApplicationMojoTest extends AbstractBrooklynMojoTest {
         StopApplicationMojo mojo = new StopApplicationMojo(server.getUrl("/"), APPLICATION);
         executeMojoWithTimeout(mojo);
 
-        RecordedRequest request = server.takeRequest();
+        RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         final String expectedPath = "/v1/applications/" + APPLICATION + "/entities/" + APPLICATION + "/effectors/stop" +
                 "?timeout=" + mojo.getTimeout().toMilliseconds();
         assertEquals(expectedPath, request.getPath());

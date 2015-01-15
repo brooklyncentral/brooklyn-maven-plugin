@@ -47,7 +47,6 @@
                     </execution>
                     <execution>
                         <id>Query sensor value</id>
-                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>sensor</goal>
                         </goals>

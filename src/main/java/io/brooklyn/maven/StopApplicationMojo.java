@@ -18,6 +18,7 @@ package io.brooklyn.maven;
 import java.net.URL;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -52,11 +53,15 @@ public class StopApplicationMojo extends AbstractInvokeBrooklynMojo {
     }
 
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() {
         getLog().info("Stopping application " + application);
-        String timeout = String.valueOf(getTimeout().toMilliseconds());
-        getApi().getEffectorApi().invoke(application, application, "stop", timeout,
-                ImmutableMap.<String, Object>of());
+        try {
+            String timeout = String.valueOf(getTimeout().toMilliseconds());
+            getApi().getEffectorApi().invoke(application, application, "stop", timeout,
+                    ImmutableMap.<String, Object>of());
+        } catch (Exception e) {
+            getLog().warn("Exception stopping application", e);
+        }
     }
 
 }

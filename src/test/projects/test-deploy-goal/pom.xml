@@ -55,6 +55,8 @@
                             <server>${server}</server>
                             <blueprint>${project.basedir}/blueprint.yaml</blueprint>
                             <propertyName>appId</propertyName>
+                            <timeout>30</timeout>
+                            <timeoutUnit>SECONDS</timeoutUnit>
                         </configuration>
                     </execution>
                 </executions>
