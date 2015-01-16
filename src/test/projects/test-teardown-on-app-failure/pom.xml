@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>test</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+
+    <name>Test of Brooklyn Maven Plugin</name>
+
+    <description>
+        Use to confirm that a failed deployment is stopped before the build exits.
+    </description>
+
+    <properties>
+        <server>http://127.0.0.1:8081</server>
+    </properties>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.brooklyn.maven</groupId>
+                <artifactId>brooklyn-maven-plugin</artifactId>
+                <version>0.1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>Deploy blueprint</id>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                        <configuration>
+                            <server>${server}</server>
+                            <blueprint>${project.basedir}/blueprint.yaml</blueprint>
+                            <propertyName>appId</propertyName>
+                            <timeoutUnit>SECONDS</timeoutUnit>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

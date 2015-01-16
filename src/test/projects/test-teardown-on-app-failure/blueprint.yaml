@@ -1,0 +1,6 @@
+name: Failing blueprint
+location: localhost
+services:
+- type: brooklyn.entity.webapp.tomcat.TomcatServer
+  brooklyn.config:
+    skipStart: true
