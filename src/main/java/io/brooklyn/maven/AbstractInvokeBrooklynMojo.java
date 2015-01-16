@@ -18,7 +18,10 @@ package io.brooklyn.maven;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URL;
+import java.util.Date;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.ws.rs.core.Response;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -30,6 +33,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import brooklyn.management.ha.ManagementNodeState;
 import brooklyn.rest.client.BrooklynApi;
+import brooklyn.rest.domain.Status;
+import brooklyn.util.repeat.Repeater;
 import brooklyn.util.time.Duration;
 
 /**
@@ -151,4 +156,49 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
     protected boolean isUnhealthyResponse(Response response) {
         return response.getStatus() < 200 || response.getStatus() >= 300;
     }
+
+    /**
+     * Polls Brooklyn until the given application has the given status. Quits early if the application's
+     * status is {@link brooklyn.rest.domain.Status#ERROR} and desiredStatus is something else.
+     * @return the final polled status
+     */
+    protected Status waitForAppStatus(final String application, final Status desiredStatus) {
+        final AtomicReference<Status> appStatus = new AtomicReference<Status>(Status.UNKNOWN);
+        final boolean shortcutOnError = !Status.ERROR.equals(desiredStatus);
+        getLog().info("Waiting " + getTimeout() + " from " + new Date() + " for application " + application + " to be " + desiredStatus);
+        boolean finalAppStatusKnown = Repeater.create("Waiting for application " + application + " status to be " + desiredStatus)
+                .every(getPollPeriod())
+                .limitTimeTo(getTimeout())
+                .rethrowExceptionImmediately()
+                .until(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        Status status = getApi().getApplicationApi().get(application).getStatus();
+                        getLog().debug("Application " + application + " status is: " + status);
+                        appStatus.set(status);
+                        return desiredStatus.equals(status) || (shortcutOnError && Status.ERROR.equals(status));
+                    }
+                })
+                .run();
+        if (appStatus.get().equals(desiredStatus)) {
+            getLog().info("Application " + application + " is " + desiredStatus.name().toLowerCase());
+        } else {
+            getLog().warn("Application is not " + desiredStatus.name().toLowerCase() + " within " + getTimeout() +
+                    ". Status is: " + appStatus.get());
+        }
+        return appStatus.get();
+    }
+
+    /**
+     * Throws a {@link MojoFailureException} if the given application's status is
+     * not desiredStatus within the configured {@link #timeout}.
+     */
+    protected void waitForAppStatusOrThrow(String application, Status desiredStatus) throws MojoFailureException {
+        Status finalStatus = waitForAppStatus(application, desiredStatus);
+        if (!finalStatus.equals(desiredStatus)) {
+            throw new MojoFailureException("Application is not " + desiredStatus.name().toLowerCase() +
+                    " within " + getTimeout() + ". Is: " + finalStatus);
+        }
+    }
+
 }

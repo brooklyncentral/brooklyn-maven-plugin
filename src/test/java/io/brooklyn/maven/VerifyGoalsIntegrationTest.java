@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
@@ -70,7 +71,7 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
                 "server", server.getUrl("/").toString(),
                 "appId", APPLICATION));
 
-        RecordedRequest request = server.takeRequest();
+        RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertTrue(request.getPath().startsWith(String.format("/v1/applications/%s/entities/%s/descendants/sensor/",
                 APPLICATION, APPLICATION)));
         verifier.verifyErrorFreeLog();

@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -78,16 +77,16 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         executeMojoWithTimeout(mojo);
 
         // Mojo posts blueprint
-        RecordedRequest request = server.takeRequest();
+        RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/applications", request.getPath());
         assertEquals("POST", request.getMethod());
         assertEquals(YAML, new String(request.getBody()));
 
         // Mojo waits for blueprint to be running
-        request = server.takeRequest();
+        request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/applications/" + APP_ID, request.getPath());
         assertEquals("GET", request.getMethod());
-        request = server.takeRequest();
+        request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/applications/" + APP_ID, request.getPath());
         assertEquals("GET", request.getMethod());
 
@@ -114,12 +113,12 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         executeMojoWithTimeout(mojo);
 
         // Mojo loads blueprint
-        RecordedRequest request = server.takeRequest();
+        RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals(blueprintPath, request.getPath());
         assertEquals("GET", request.getMethod());
 
         // Then posts it to the server
-        request = server.takeRequest();
+        request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/applications", request.getPath());
         assertEquals("POST", request.getMethod());
         assertEquals(YAML, new String(request.getBody()));
@@ -181,8 +180,8 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
             executeMojoWithTimeout(mojo);
             fail("Expected mojo to throw when app start takes too long");
         } catch (MojoFailureException e) {
-            assertTrue("Expected exception message to correspond to timeout. Was: " + e.getMessage(),
-                    e.getMessage().contains("Application is not running within"));
+            assertTrue("Expected exception message to contain 'should be running but is starting'. Was: " + e.getMessage(),
+                    e.getMessage().contains("should be running but is starting"));
         }
     }
 
@@ -194,12 +193,13 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         server.play();
         DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
+        mojo.setNoStopAppOnDeployError();
 
         try {
             executeMojoWithTimeout(mojo);
         } catch (MojoFailureException e) {
-            assertTrue("Expected exception message to contain 'ERROR', is: " + e.getMessage(),
-                    e.getMessage().contains("ERROR"));
+            assertTrue("Expected exception message to contain 'should be running but is error', is: " + e.getMessage(),
+                    e.getMessage().contains("should be running but is error"));
         }
     }
 

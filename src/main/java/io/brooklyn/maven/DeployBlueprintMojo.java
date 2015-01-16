@@ -18,10 +18,7 @@ package io.brooklyn.maven;
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.ws.rs.core.Response;
 
 import org.apache.maven.plugin.MojoFailureException;
@@ -35,10 +32,8 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
 import brooklyn.rest.client.BrooklynApi;
-import brooklyn.rest.domain.ApplicationSummary;
 import brooklyn.rest.domain.Status;
 import brooklyn.rest.domain.TaskSummary;
-import brooklyn.util.repeat.Repeater;
 
 /**
  * Instruct an existing Brooklyn server to deploy the given blueprint.
@@ -70,6 +65,26 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
     private String propertyName;
 
     /**
+     * Configure the plugin to wait for the deployed blueprint to be {@link Status#RUNNING running}
+     * or to throw a {@link MojoFailureException} if it is not running within the configured
+     * {@link #timeout}.
+     * <p>
+     * If a deployment fails when this property is set then any goals configured in the
+     * post-integration-test phase will not run.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean waitForRunning;
+
+    /**
+     * The deploy goal throws a {@link MojoFailureException} if {@link #waitForRunning} is
+     * true and the deployed application's status is {@link Status#ERROR}. If this property
+     * is true the plugin will attempt to stop the application before throwing. If false it
+     * will leave the application alive.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean stopAppOnDeployError;
+
+    /**
      * Constructor for use by Maven/Guice.
      */
     DeployBlueprintMojo() {
@@ -85,67 +100,32 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
         this.blueprint = blueprint;
         this.blueprintEncoding = "UTF-8";
         this.propertyName = propertyName;
+        this.waitForRunning = true;
+        this.stopAppOnDeployError = true;
     }
 
     public void execute() throws MojoFailureException {
         getLog().debug("Working with server at " + server);
-
         // Propagates all non-mojo exceptions as MojoFailureExceptions
         try {
             String loadedBlueprint = loadBlueprint();
             getLog().debug("Blueprint:\n" + loadedBlueprint);
-            Response r = getApi().getApplicationApi().createFromYaml(loadedBlueprint);
-
-            if (isUnhealthyResponse(r)) {
-                throw new MojoFailureException("Unexpected response deploying blueprint to server: " + r.getStatus());
-            } else {
-                getLog().debug("Server response to deploy blueprint: " + r.getStatus());
+            final TaskSummary task = deployBlueprint(loadedBlueprint);
+            final String application = task.getEntityId();
+            if (waitForRunning) {
+                waitForRunningAndThrowOtherwise(application);
             }
-
-            final TaskSummary task = BrooklynApi.getEntity(r, TaskSummary.class);
-            final String appId = task.getEntityId();
-
-            getLog().info("Waiting " + getTimeout() + " from " + new Date() + " for application " + appId + " to be running");
-            final AtomicReference<Status> appStatus = new AtomicReference<Status>(Status.UNKNOWN);
-
-            // Poll Brooklyn until the deployed app is running or on fire.
-            boolean finalAppStatusKnown = Repeater.create("Waiting for application " + appId + " to be running")
-                    .every(getPollPeriod())
-                    .limitTimeTo(getTimeout())
-                    .rethrowExceptionImmediately()
-                    .until(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            ApplicationSummary app = getApi().getApplicationApi().get(appId);
-                            Status status = app.getStatus();
-                            appStatus.set(status);
-                            return Status.RUNNING.equals(status) || Status.ERROR.equals(status);
-                        }
-                    })
-                    .run();
-
-            switch (appStatus.get()) {
-            case RUNNING:
-                getLog().info("Application " + appId + " is running");
-                if (propertyName != null) {
-                    getProject().getProperties().setProperty(propertyName, task.getEntityId());
-                    getLog().debug("Set property '" + propertyName + "' to: " + appId);
-                } else {
-                    getLog().info("No property to set to new application ID");
-                }
-                break;
-            default:
-                throw new MojoFailureException("Application is not running within " + getTimeout() + ". Status is: " + appStatus.get());
+            if (propertyName != null) {
+                getProject().getProperties().setProperty(propertyName, task.getEntityId());
+                getLog().debug("Set property '" + propertyName + "' to: " + application);
+            } else {
+                getLog().info("No property to set to new application ID");
             }
         } catch (MojoFailureException e) {
             throw e;
         } catch (Exception e) {
             throw new MojoFailureException("Exception deploying blueprint", e);
         }
-    }
-
-    void setBlueprintEncoding(String encoding) {
-        this.blueprintEncoding = encoding;
     }
 
     private String loadBlueprint() throws MojoFailureException {
@@ -159,6 +139,31 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             }
         } else {
             return readUrl(blueprint);
+        }
+    }
+
+    private TaskSummary deployBlueprint(String blueprint) throws MojoFailureException {
+        Response r = getApi().getApplicationApi().createFromYaml(blueprint);
+        if (isUnhealthyResponse(r)) {
+            throw new MojoFailureException("Unexpected response deploying blueprint to server: " + r.getStatus());
+        } else {
+            getLog().debug("Server response to deploy blueprint: " + r.getStatus());
+        }
+        return BrooklynApi.getEntity(r, TaskSummary.class);
+    }
+
+    private void waitForRunningAndThrowOtherwise(String appId) throws MojoFailureException {
+        Status finalStatus = waitForAppStatus(appId, Status.RUNNING);
+        if (!Status.RUNNING.equals(finalStatus)) {
+            getLog().error("Application is not running. Is: " + finalStatus.name().toLowerCase());
+            String message = "Application " + appId + " should be running but is " + finalStatus.name().toLowerCase() + ". ";
+            if (stopAppOnDeployError) {
+                new StopApplicationMojo(server, appId).execute();
+                message += "It was requested to stop.";
+            } else {
+                message += "It was not requested to stop; its resources may still be running.";
+            }
+            throw new MojoFailureException(message);
         }
     }
 
@@ -178,6 +183,18 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
         } catch (Exception e) {
             throw new MojoFailureException("Failed to load " + blueprint, e);
         }
+    }
+
+    void setBlueprintEncoding(String encoding) {
+        this.blueprintEncoding = encoding;
+    }
+
+    void setNoWaitForRunning() {
+        this.waitForRunning = false;
+    }
+
+    void setNoStopAppOnDeployError() {
+        this.stopAppOnDeployError = false;
     }
 
 }

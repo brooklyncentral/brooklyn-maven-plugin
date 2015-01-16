@@ -16,7 +16,10 @@
 package io.brooklyn.maven;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -45,7 +48,7 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
         mojo.setProject(mavenProject);
         executeMojoWithTimeout(mojo);
 
-        RecordedRequest request = server.takeRequest();
+        RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         String expectedPath = String.format("/v1/applications/%s/entities/%s/descendants/sensor/%s?typeRegex=%s",
                 APPLICATION, APPLICATION, SENSOR, TYPE_REGEX);
         assertEquals(expectedPath, request.getPath());
@@ -59,12 +62,32 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
         server.enqueue(newJsonResponse().setBody("{}"));
         server.play();
         QuerySensorMojo mojo = new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+        mojo.setFailIfNoMatches();
         try {
             executeMojoWithTimeout(mojo);
             fail("Expected exception running query goal with no results");
         } catch (MojoFailureException e) {
-            // ignored
+            assertTrue("Expected exception message to start 'No entities' and end 'have a value for <sensor>, was: " + e.getMessage(),
+                    e.getMessage().startsWith("No entities") && e.getMessage().endsWith("have a value for " + SENSOR));
         }
+    }
+
+    @Test
+    public void testWaitsForApplicationToBeRunning() throws Exception {
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("RUNNING"));
+        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put(APPLICATION, "bob").toString()));
+        server.play();
+
+        MavenProject mavenProject = new BrooklynMavenProjectStub();
+        QuerySensorMojo mojo = new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+        mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
+        mojo.setProject(mavenProject);
+        mojo.setWaitForRunning();
+        executeMojoWithTimeout(mojo);
+
+        assertEquals(4, server.getRequestCount());
     }
 
 }
