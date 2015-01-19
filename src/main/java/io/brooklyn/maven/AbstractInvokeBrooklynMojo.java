@@ -54,6 +54,18 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
     protected URL server;
 
     /**
+     * The user to connect to the Brooklyn server as.
+     */
+    @Parameter(property = "brooklyn.user")
+    protected String username;
+
+    /**
+     * The password for the user at the Brooklyn server.
+     */
+    @Parameter(property = "brooklyn.password")
+    protected String password;
+
+    /**
      * The duration mojos should wait for actions at Brooklyn to complete.
      */
     @Parameter(
@@ -104,7 +116,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
 
     protected BrooklynApi getApi() {
         if (api == null) {
-            api = new BrooklynApi(server);
+            api = new BrooklynApi(server, username, password);
         }
         return api;
     }
@@ -140,6 +152,12 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
     AbstractInvokeBrooklynMojo setTimeout(int timeout, TimeUnit unit) {
         this.timeout = checkNotNull(timeout, "timeout");
         this.timeoutUnit = checkNotNull(unit, "unit");
+        return this;
+    }
+
+    AbstractInvokeBrooklynMojo setCredentials(String user, String password) {
+        this.username = checkNotNull(user, "user");
+        this.password = checkNotNull(password, "password");
         return this;
     }
 
