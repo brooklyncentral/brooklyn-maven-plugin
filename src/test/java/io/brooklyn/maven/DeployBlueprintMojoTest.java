@@ -16,6 +16,7 @@
 package io.brooklyn.maven;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -32,9 +33,11 @@ import org.junit.rules.TemporaryFolder;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import com.sun.jersey.core.util.Base64;
 
 import brooklyn.util.collections.Jsonya;
 import brooklyn.util.net.Networking;
@@ -214,6 +217,29 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         } catch (MojoFailureException e) {
             // ignored
         }
+    }
+
+    @Test
+    public void testCanAuthenticateToBrooklyn() throws Exception {
+        final String user = "eric.wimp";
+        final String password = "banana";
+
+        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(applicationStatusResponse("RUNNING"));
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
+        mojo.setCredentials(user, password)
+                .setPollPeriod(1, TimeUnit.MILLISECONDS);
+        executeMojoWithTimeout(mojo);
+
+        RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
+        String auth = request.getHeader("Authorization");
+        assertNotNull("Expected Authorization header, got: " + Iterables.toString(request.getHeaders()), auth);
+        String userpass = Base64.base64Decode(auth.substring(6));
+        String authUser = userpass.substring(0, userpass.indexOf(":"));
+        String authPass = userpass.substring(userpass.indexOf(":") + 1);
+        assertEquals(user, authUser);
+        assertEquals(password, authPass);
     }
 
 }
