@@ -11,7 +11,7 @@ Include this plugin in your pom:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 </plugin>
 ```
 
@@ -20,22 +20,12 @@ And these plugin repositories:
 <pluginRepositories>
     <pluginRepository>
         <id>apache-snapshots</id>
-        <url>https://repository.apache.org/content/repositories/snapshots</url>
+        <url>https://repository.apache.org/content/repositories/releases</url>
         <releases>
-            <enabled>false</enabled>
+            <enabled>true</enabled>
         </releases>
         <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-        <id>cloudsoft-snapshot</id>
-        <url>http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local/</url>
-        <releases>
             <enabled>false</enabled>
-        </releases>
-        <snapshots>
-            <enabled>true</enabled>
         </snapshots>
     </pluginRepository>
 </pluginRepositories>
