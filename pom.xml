@@ -263,7 +263,6 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <!-- Leave deployment to com.github.github:site-maven-plugin. -->
                     <skipDeploy>true</skipDeploy>
                     <attributes>
                         <!--<currentStableVersion>${releasedVersion.version}</currentStableVersion>-->
@@ -276,25 +275,6 @@
                         <version>1.6</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>com.github.github</groupId>
-                <artifactId>site-maven-plugin</artifactId>
-                <version>0.9</version>
-                <configuration>
-                    <message>Generating site for ${project.version}</message>
-                    <!-- Must match an id configured in your settings.xml -->
-                    <server>github</server>
-                    <noJekyll>true</noJekyll>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>site</goal>
-                        </goals>
-                        <phase>site-deploy</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
