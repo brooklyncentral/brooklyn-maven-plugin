@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="Date-Revision-yyyymmdd" content="20150126" />
     <meta http-equiv="Content-Language" content="en" />
-    <title>brooklyn-maven-plugin - Brooklyn Maven Plugin</title>
+    <title>brooklyn-maven-plugin - Usage</title>
     <link rel="stylesheet" href="./css/apache-maven-fluido-1.3.1.min.css" />
     <link rel="stylesheet" href="./css/site.css" />
     <link rel="stylesheet" href="./css/print.css" media="print" />
@@ -71,10 +71,12 @@
                 <ul class="nav nav-list">
                     <li class="nav-header">Overview</li>
                               
-      <li class="active">
+      <li>
   
-            <a href="#"><i class="none"></i>Introduction</a>
-          </li>
+                          <a href="index.html" title="Introduction">
+          <i class="none"></i>
+        Introduction</a>
+            </li>
                 
       <li>
   
@@ -83,12 +85,10 @@
         Goals</a>
             </li>
                 
-      <li>
+      <li class="active">
   
-                          <a href="usage.html" title="Usage">
-          <i class="none"></i>
-        Usage</a>
-            </li>
+            <a href="#"><i class="none"></i>Usage</a>
+          </li>
                               <li class="nav-header">Examples</li>
                               
       <li>
@@ -98,69 +98,13 @@
         Injecting sensors into your build</a>
             </li>
                               <li class="nav-header">Project Documentation</li>
-                                                                                                                                                                                                                        
+                                                                                                                                                                                                              
       <li>
   
                           <a href="project-info.html" title="Project Information">
-          <i class="icon-chevron-down"></i>
+          <i class="icon-chevron-right"></i>
         Project Information</a>
-                    <ul class="nav nav-list">
-                    
-      <li class="active">
-  
-            <a href="#"><i class="none"></i>About</a>
-          </li>
-                    
-      <li>
-  
-                          <a href="project-summary.html" title="Project Summary">
-          <i class="none"></i>
-        Project Summary</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="license.html" title="Project License">
-          <i class="none"></i>
-        Project License</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="issue-tracking.html" title="Issue Tracking">
-          <i class="none"></i>
-        Issue Tracking</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="source-repository.html" title="Source Repository">
-          <i class="none"></i>
-        Source Repository</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="distribution-management.html" title="Distribution Management">
-          <i class="none"></i>
-        Distribution Management</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="dependencies.html" title="Dependencies">
-          <i class="none"></i>
-        Dependencies</a>
-            </li>
-                    
-      <li>
-  
-                          <a href="plugins.html" title="Project Plugins">
-          <i class="none"></i>
-        Project Plugins</a>
-            </li>
-              </ul>
-        </li>
+                  </li>
                                                                                                       
       <li>
   
@@ -197,35 +141,33 @@
                 
         <div id="bodyColumn"  class="span9" >
                                   
-            <h1>Brooklyn Maven Plugin</h1>
-<p>A Maven plugin to help test your <a class="externalLink" href="https://brooklyn.incubator.apache.org/">Apache Brooklyn</a> blueprints.</p>
-<div class="section">
-<div class="section">
-<h3>Goals<a name="Goals"></a></h3>
+            <h1>Usage</h1>
+<p>Include this plugin in your pom:</p>
 
-<dl>
+<div class="source">
+<pre>&lt;plugin&gt;
+    &lt;groupId&gt;io.brooklyn.maven&lt;/groupId&gt;
+    &lt;artifactId&gt;brooklyn-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;0.1.0&lt;/version&gt;
+&lt;/plugin&gt;
+</pre></div>
+<p>And these plugin repositories:</p>
 
-<dt><b>deploy</b></dt>
-
-<dd>
-Instruct an existing Brooklyn server to deploy the given blueprint.
-</dd>
-
-
-<dt><b>sensor</b></dt>
-
-<dd>
-Instruct a Brooklyn server to stop the application with the given ID.
-</dd>
-
-
-<dt><b>stop</b></dt>
-
-<dd>
-Fetch the value of a sensor on entities at a given server whose types match
-a regular expression.
-</dd>
-</dl></div></div>
+<div class="source">
+<pre>&lt;pluginRepositories&gt;
+    &lt;pluginRepository&gt;
+        &lt;id&gt;apache-snapshots&lt;/id&gt;
+        &lt;url&gt;https://repository.apache.org/content/repositories/releases/url&gt;
+        &lt;releases&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+        &lt;/releases&gt;
+        &lt;snapshots&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
+        &lt;/snapshots&gt;
+    &lt;/pluginRepository&gt;
+&lt;/pluginRepositories&gt;
+</pre></div>
+<p>The plugin works with existing Brooklyn servers. Follow Brooklyn&#x2019;s <a class="externalLink" href="https://brooklyn.incubator.apache.org/v/latest/start/running.html">getting started</a> guide for instructions on running Brooklyn.</p>
                   </div>
             </div>
           </div>
