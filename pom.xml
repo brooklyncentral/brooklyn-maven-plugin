@@ -14,14 +14,12 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>maven-plugin</packaging>
 
     <parent>
@@ -265,6 +263,7 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
+                    <!-- Leave deployment to com.github.github:site-maven-plugin. -->
                     <skipDeploy>true</skipDeploy>
                     <attributes>
                         <!--<currentStableVersion>${releasedVersion.version}</currentStableVersion>-->
@@ -284,6 +283,7 @@
                 <version>0.9</version>
                 <configuration>
                     <message>Generating site for ${project.version}</message>
+                    <!-- Must match an id configured in your settings.xml -->
                     <server>github</server>
                     <noJekyll>true</noJekyll>
                 </configuration>
