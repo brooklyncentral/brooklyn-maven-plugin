@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="brooklyn-maven-plugin">
+    <publishDate format="dd MMM yyyy" position="left"/>
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.3.1</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+            <gitHub>
+                <projectId>brooklyncentral/brooklyn-maven-plugin</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+                <ribbonColor>green</ribbonColor>
+            </gitHub>
+        </fluidoSkin>
+    </custom>
+    <body>
+        <menu name="Overview">
+            <item name="Introduction" href="index.html"/>
+            <item name="Goals" href="plugin-info.html"/>
+            <item name="Usage" href="usage.html"/>
+        </menu>
+
+        <menu name="Examples">
+            <item name="Injecting sensors into your build" href="tomcat-example.html"/>
+        </menu>
+
+        <menu ref="reports"/>
+
+        <menu name="External Links">
+            <item name="Apache Brooklyn" href="https://brooklyn.incubator.apache.org/"/>
+        </menu>
+    </body>
+</project>
