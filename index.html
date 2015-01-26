@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brooklyn Maven Plugin by brooklyncentral</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Brooklyn Maven Plugin</h1>
+        <p>A Maven plugin to help test Apache Brooklyn blueprints </p>
+
+        <p class="view"><a href="https://github.com/brooklyncentral/brooklyn-maven-plugin">View the Project on GitHub <small>brooklyncentral/brooklyn-maven-plugin</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/brooklyncentral/brooklyn-maven-plugin/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/brooklyncentral/brooklyn-maven-plugin/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/brooklyncentral/brooklyn-maven-plugin">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="brooklyn-maven-plugin" class="anchor" href="#brooklyn-maven-plugin" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brooklyn Maven Plugin</h1>
+
+<p>A Maven plugin to help test your <a href="https://brooklyn.incubator.apache.org/">Apache
+Brooklyn</a> blueprints.</p>
+
+<h3>
+<a id="download" class="anchor" href="#download" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download</h3>
+
+<p>Include this plugin in your pom:</p>
+
+<div class="highlight highlight-xml"><pre>&lt;<span class="pl-ent">plugin</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;io.brooklyn.maven&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;brooklyn-maven-plugin&lt;/<span class="pl-ent">artifactId</span>&gt;
+    &lt;<span class="pl-ent">version</span>&gt;0.1.0-SNAPSHOT&lt;/<span class="pl-ent">version</span>&gt;
+&lt;/<span class="pl-ent">plugin</span>&gt;</pre></div>
+
+<p>And these plugin repositories:</p>
+
+<div class="highlight highlight-xml"><pre>&lt;<span class="pl-ent">pluginRepositories</span>&gt;
+    &lt;<span class="pl-ent">pluginRepository</span>&gt;
+        &lt;<span class="pl-ent">id</span>&gt;apache-snapshots&lt;/<span class="pl-ent">id</span>&gt;
+        &lt;<span class="pl-ent">url</span>&gt;https://repository.apache.org/content/repositories/snapshots&lt;/<span class="pl-ent">url</span>&gt;
+        &lt;<span class="pl-ent">releases</span>&gt;
+            &lt;<span class="pl-ent">enabled</span>&gt;false&lt;/<span class="pl-ent">enabled</span>&gt;
+        &lt;/<span class="pl-ent">releases</span>&gt;
+        &lt;<span class="pl-ent">snapshots</span>&gt;
+            &lt;<span class="pl-ent">enabled</span>&gt;true&lt;/<span class="pl-ent">enabled</span>&gt;
+        &lt;/<span class="pl-ent">snapshots</span>&gt;
+    &lt;/<span class="pl-ent">pluginRepository</span>&gt;
+    &lt;<span class="pl-ent">pluginRepository</span>&gt;
+        &lt;<span class="pl-ent">id</span>&gt;cloudsoft-snapshot&lt;/<span class="pl-ent">id</span>&gt;
+        &lt;<span class="pl-ent">url</span>&gt;http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local/&lt;/<span class="pl-ent">url</span>&gt;
+        &lt;<span class="pl-ent">releases</span>&gt;
+            &lt;<span class="pl-ent">enabled</span>&gt;false&lt;/<span class="pl-ent">enabled</span>&gt;
+        &lt;/<span class="pl-ent">releases</span>&gt;
+        &lt;<span class="pl-ent">snapshots</span>&gt;
+            &lt;<span class="pl-ent">enabled</span>&gt;true&lt;/<span class="pl-ent">enabled</span>&gt;
+        &lt;/<span class="pl-ent">snapshots</span>&gt;
+    &lt;/<span class="pl-ent">pluginRepository</span>&gt;
+&lt;/<span class="pl-ent">pluginRepositories</span>&gt;</pre></div>
+
+<h3>
+<a id="goals" class="anchor" href="#goals" aria-hidden="true"><span class="octicon octicon-link"></span></a>Goals</h3>
+
+<dl>
+<dt><strong>deploy</strong></dt>
+<dd>
+Instruct an existing Brooklyn server to deploy the given blueprint.
+</dd>
+
+<dt><strong>sensor</strong></dt>
+<dd>
+Instruct a Brooklyn server to stop the application with the given ID.
+</dd>
+
+<dt><strong>stop</strong></dt>
+<dd>
+Fetch the value of a sensor on entities at a given server whose types match
+a regular expression.
+</dd>
+
+<dt><strong>help</strong></dt>
+<dd>
+Display help information on brooklyn-maven-plugin.
+</dd>
+</dl>
+
+<h3>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h3>
+
+<p>The <a href="src/test/projects/example-app/pom.xml">example-pom</a> project:</p>
+
+<ul>
+<li>Deploys a blueprint from a file that runs a
+<a href="https://brooklyn.incubator.apache.org/learnmore/catalog/entities/brooklyn.entity.webapp.tomcat.TomcatServer.html">TomcatServer</a>
+and an EmptySoftwareProcess.</li>
+<li>Queries Brooklyn for the main URL of the Tomcat application (the
+<code>webapp.url</code> sensor).</li>
+<li>Uses <code>maven-antrun-plugin</code> to echo these values to the console.</li>
+<li>Stops the deployment before Maven exits.</li>
+</ul>
+
+<p>The important bits of the pom are:</p>
+
+<div class="highlight highlight-xml"><pre>&lt;<span class="pl-ent">plugin</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;io.brooklyn.maven&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;brooklyn-maven-plugin&lt;/<span class="pl-ent">artifactId</span>&gt;
+    &lt;<span class="pl-ent">version</span>&gt;0.1.0-SNAPSHOT&lt;/<span class="pl-ent">version</span>&gt;
+    &lt;<span class="pl-ent">executions</span>&gt;
+        &lt;<span class="pl-ent">execution</span>&gt;
+            &lt;<span class="pl-ent">id</span>&gt;Deploy blueprint&lt;/<span class="pl-ent">id</span>&gt;
+            &lt;<span class="pl-ent">goals</span>&gt;
+                &lt;<span class="pl-ent">goal</span>&gt;deploy&lt;/<span class="pl-ent">goal</span>&gt;
+            &lt;/<span class="pl-ent">goals</span>&gt;
+            &lt;<span class="pl-ent">configuration</span>&gt;
+                &lt;<span class="pl-ent">server</span>&gt;${server}&lt;/<span class="pl-ent">server</span>&gt;
+                &lt;<span class="pl-ent">blueprint</span>&gt;${project.basedir}/blueprint.yaml&lt;/<span class="pl-ent">blueprint</span>&gt;
+                &lt;<span class="pl-ent">propertyName</span>&gt;appId&lt;/<span class="pl-ent">propertyName</span>&gt;
+            &lt;/<span class="pl-ent">configuration</span>&gt;
+        &lt;/<span class="pl-ent">execution</span>&gt;
+        &lt;<span class="pl-ent">execution</span>&gt;
+            &lt;<span class="pl-ent">id</span>&gt;Query sensor value&lt;/<span class="pl-ent">id</span>&gt;
+            &lt;<span class="pl-ent">phase</span>&gt;pre-integration-test&lt;/<span class="pl-ent">phase</span>&gt;
+            &lt;<span class="pl-ent">goals</span>&gt;
+                &lt;<span class="pl-ent">goal</span>&gt;sensor&lt;/<span class="pl-ent">goal</span>&gt;
+            &lt;/<span class="pl-ent">goals</span>&gt;
+            &lt;<span class="pl-ent">configuration</span>&gt;
+                &lt;<span class="pl-ent">server</span>&gt;${server}&lt;/<span class="pl-ent">server</span>&gt;
+                &lt;<span class="pl-ent">application</span>&gt;${appId}&lt;/<span class="pl-ent">application</span>&gt;
+                &lt;<span class="pl-ent">sensor</span>&gt;webapp.url&lt;/<span class="pl-ent">sensor</span>&gt;
+                &lt;<span class="pl-ent">typeRegex</span>&gt;.*Tomcat.*&lt;/<span class="pl-ent">typeRegex</span>&gt;
+                &lt;<span class="pl-ent">propertyName</span>&gt;sensorVal&lt;/<span class="pl-ent">propertyName</span>&gt;
+            &lt;/<span class="pl-ent">configuration</span>&gt;
+        &lt;/<span class="pl-ent">execution</span>&gt;
+        &lt;<span class="pl-ent">execution</span>&gt;
+            &lt;<span class="pl-ent">id</span>&gt;Stop the application&lt;/<span class="pl-ent">id</span>&gt;
+            &lt;<span class="pl-ent">goals</span>&gt;
+                &lt;<span class="pl-ent">goal</span>&gt;stop&lt;/<span class="pl-ent">goal</span>&gt;
+            &lt;/<span class="pl-ent">goals</span>&gt;
+            &lt;<span class="pl-ent">configuration</span>&gt;
+                &lt;<span class="pl-ent">server</span>&gt;${server}&lt;/<span class="pl-ent">server</span>&gt;
+                &lt;<span class="pl-ent">application</span>&gt;${appId}&lt;/<span class="pl-ent">application</span>&gt;
+            &lt;/<span class="pl-ent">configuration</span>&gt;
+        &lt;/<span class="pl-ent">execution</span>&gt;
+    &lt;/<span class="pl-ent">executions</span>&gt;
+&lt;/<span class="pl-ent">plugin</span>&gt;</pre></div>
+
+<p>You can test this project by starting Brooklyn and running <code>mvn clean install</code>
+from the <code>example-app</code> directory. If Brooklyn starts on any port other than
+8081 then run with <code>-Dserver=http://host:port</code>.</p>
+
+<p>At the end of the build you should see output like:</p>
+
+<pre><code>[INFO] --- maven-antrun-plugin:1.3:run (default) @ test ---
+[INFO] Executing tasks
+    [echo] Maven plugin example results:
+    [echo] Application: T0tERELL
+    [echo] Sensor value: http://127.0.0.1:8080/
+</code></pre>
+
+<h3>
+<a id="caveats" class="anchor" href="#caveats" aria-hidden="true"><span class="octicon octicon-link"></span></a>Caveats</h3>
+
+<p>You may currently only query for entities by their type. If two or more
+entities match the query goal's regular expression the property will be set to
+<code>result1,result2,...</code>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/brooklyncentral">brooklyncentral</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
