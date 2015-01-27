@@ -2,7 +2,10 @@ Brooklyn Maven Plugin
 =====================
 
 A Maven plugin to help test your [Apache
-Brooklyn](https://brooklyn.incubator.apache.org/) blueprints.
+Brooklyn](https://brooklyn.incubator.apache.org/) blueprints. For full
+documentation see [the plugin website]
+(http://brooklyncentral.github.io/brooklyn-maven-plugin/index.html).
+
 
 ### Download
 
@@ -30,6 +33,7 @@ And these plugin repositories:
     </pluginRepository>
 </pluginRepositories>
 ```
+
 
 ### Goals
 
@@ -74,7 +78,7 @@ The important bits of the pom are:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <executions>
         <execution>
             <id>Deploy blueprint</id>
@@ -127,6 +131,7 @@ At the end of the build you should see output like:
     [echo] Application: T0tERELL
     [echo] Sensor value: http://127.0.0.1:8080/
 ```
+
 
 ### Caveats
 
