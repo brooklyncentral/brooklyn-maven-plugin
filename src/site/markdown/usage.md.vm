@@ -11,18 +11,18 @@ Include this plugin in your pom:
 </plugin>
 ```
 
-And these plugin repositories:
+If you are using a snapshot release you should also include this plugin repository:
 
 ```xml
 <pluginRepositories>
     <pluginRepository>
-        <id>apache-snapshots</id>
-        <url>https://repository.apache.org/content/repositories/releases/</url>
+        <id>sonatype-snapshots</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         <releases>
-            <enabled>true</enabled>
+            <enabled>false</enabled>
         </releases>
         <snapshots>
-            <enabled>false</enabled>
+            <enabled>true</enabled>
         </snapshots>
     </pluginRepository>
 </pluginRepositories>
