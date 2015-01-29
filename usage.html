@@ -151,18 +151,18 @@
     &lt;version&gt;0.1.0&lt;/version&gt;
 &lt;/plugin&gt;
 </pre></div>
-<p>And these plugin repositories:</p>
+<p>If you are using a snapshot release you should also include this plugin repository:</p>
 
 <div class="source">
 <pre>&lt;pluginRepositories&gt;
     &lt;pluginRepository&gt;
-        &lt;id&gt;apache-snapshots&lt;/id&gt;
-        &lt;url&gt;https://repository.apache.org/content/repositories/releases/&lt;/url&gt;
+        &lt;id&gt;sonatype-snapshots&lt;/id&gt;
+        &lt;url&gt;https://oss.sonatype.org/content/repositories/snapshots/&lt;/url&gt;
         &lt;releases&gt;
-            &lt;enabled&gt;true&lt;/enabled&gt;
+            &lt;enabled&gt;false&lt;/enabled&gt;
         &lt;/releases&gt;
         &lt;snapshots&gt;
-            &lt;enabled&gt;false&lt;/enabled&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
         &lt;/snapshots&gt;
     &lt;/pluginRepository&gt;
 &lt;/pluginRepositories&gt;
