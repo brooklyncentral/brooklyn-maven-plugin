@@ -18,22 +18,6 @@ Include this plugin in your pom:
 </plugin>
 ```
 
-And these plugin repositories:
-```xml
-<pluginRepositories>
-    <pluginRepository>
-        <id>apache-snapshots</id>
-        <url>https://repository.apache.org/content/repositories/releases</url>
-        <releases>
-            <enabled>true</enabled>
-        </releases>
-        <snapshots>
-            <enabled>false</enabled>
-        </snapshots>
-    </pluginRepository>
-</pluginRepositories>
-```
-
 
 ### Goals
 
