@@ -108,6 +108,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
 
     public AbstractInvokeBrooklynMojo(URL server) {
         this.server = server;
+        // Values are set here to aid tests but in truth are overwritten when Maven invokes the plugin.
         this.timeout = 5;
         this.timeoutUnit = TimeUnit.SECONDS;
         this.pollPeriod = 1;
