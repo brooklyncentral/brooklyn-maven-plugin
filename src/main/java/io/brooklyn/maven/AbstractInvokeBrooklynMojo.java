@@ -177,12 +177,13 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
 
     /**
      * Polls Brooklyn until the given application has the given status. Quits early if the application's
-     * status is {@link brooklyn.rest.domain.Status#ERROR} and desiredStatus is something else.
+     * status is {@link brooklyn.rest.domain.Status#ERROR} or {@link brooklyn.rest.domain.Status#UNKNOWN}
+     * and desiredStatus is something else.
      * @return the final polled status
      */
     protected Status waitForAppStatus(final String application, final Status desiredStatus) {
         final AtomicReference<Status> appStatus = new AtomicReference<Status>(Status.UNKNOWN);
-        final boolean shortcutOnError = !Status.ERROR.equals(desiredStatus);
+        final boolean shortcutOnError = !Status.ERROR.equals(desiredStatus) && !Status.UNKNOWN.equals(desiredStatus);
         getLog().info("Waiting " + getTimeout() + " from " + new Date() + " for application " + application + " to be " + desiredStatus);
         boolean finalAppStatusKnown = Repeater.create("Waiting for application " + application + " status to be " + desiredStatus)
                 .every(getPollPeriod())
@@ -194,14 +195,15 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
                         Status status = getApi().getApplicationApi().get(application).getStatus();
                         getLog().debug("Application " + application + " status is: " + status);
                         appStatus.set(status);
-                        return desiredStatus.equals(status) || (shortcutOnError && Status.ERROR.equals(status));
+                        return desiredStatus.equals(status) || (shortcutOnError &&
+                                (Status.ERROR.equals(status) || Status.UNKNOWN.equals(status)));
                     }
                 })
                 .run();
         if (appStatus.get().equals(desiredStatus)) {
-            getLog().info("Application " + application + " is " + desiredStatus.name().toLowerCase());
+            getLog().info("Application " + application + " is " + desiredStatus.name());
         } else {
-            getLog().warn("Application is not " + desiredStatus.name().toLowerCase() + " within " + getTimeout() +
+            getLog().warn("Application is not " + desiredStatus.name() + " within " + getTimeout() +
                     ". Status is: " + appStatus.get());
         }
         return appStatus.get();
@@ -214,7 +216,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
     protected void waitForAppStatusOrThrow(String application, Status desiredStatus) throws MojoFailureException {
         Status finalStatus = waitForAppStatus(application, desiredStatus);
         if (!finalStatus.equals(desiredStatus)) {
-            throw new MojoFailureException("Application is not " + desiredStatus.name().toLowerCase() +
+            throw new MojoFailureException("Application is not " + desiredStatus.name() +
                     " within " + getTimeout() + ". Is: " + finalStatus);
         }
     }

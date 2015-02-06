@@ -184,7 +184,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
             fail("Expected mojo to throw when app start takes too long");
         } catch (MojoFailureException e) {
             assertTrue("Expected exception message to contain 'should be running but is starting'. Was: " + e.getMessage(),
-                    e.getMessage().contains("should be running but is starting"));
+                    e.getMessage().toLowerCase().contains("should be running but is starting"));
         }
     }
 
@@ -202,7 +202,26 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
             executeMojoWithTimeout(mojo);
         } catch (MojoFailureException e) {
             assertTrue("Expected exception message to contain 'should be running but is error', is: " + e.getMessage(),
-                    e.getMessage().contains("should be running but is error"));
+                    e.getMessage().toLowerCase().contains("should be running but is error"));
+        }
+    }
+
+    @Test
+    public void testBailsOutIfDeployedAppStatusIsUnknown() throws Exception {
+        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("UNKNOWN"));
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
+        mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
+        mojo.setNoStopAppOnDeployError();
+
+        try {
+            executeMojoWithTimeout(mojo);
+        } catch (MojoFailureException e) {
+            assertTrue("Expected exception message to contain 'should be running but is unknown', is: " + e.getMessage(),
+                    e.getMessage().toLowerCase().contains("should be running but is unknown"));
         }
     }
 
