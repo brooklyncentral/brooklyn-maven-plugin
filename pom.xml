@@ -66,6 +66,17 @@
         <tag>HEAD</tag>
     </scm>
 
+    <developers>
+        <developer>
+          <id>sjcorbett</id>
+          <name>Sam Corbett</name>
+          <email>sam.corbett@cloudsoftcorp.com</email>
+          <url>https://github.com/sjcorbett</url>
+          <organization>Cloudsoft</organization>
+          <organizationUrl>http://cloudsoftcorp.com</organizationUrl>
+        </developer>
+    </developers>
+
     <issueManagement>
         <system>GitHub Issues</system>
         <url>https://github.com/brooklyncentral/brooklyn-maven-plugin/issues</url>
