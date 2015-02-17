@@ -33,6 +33,10 @@
         A Maven plugin to help test your Apache Brooklyn blueprints.
     </description>
 
+    <prerequisites>
+        <maven>3.0.4</maven>
+    </prerequisites>
+
     <url>https://github.com/brooklyncentral/brooklyn-maven-plugin</url>
 
     <properties>
