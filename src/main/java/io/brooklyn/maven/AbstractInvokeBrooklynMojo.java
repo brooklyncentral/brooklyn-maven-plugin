@@ -117,7 +117,11 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
 
     protected BrooklynApi getApi() {
         if (api == null) {
-            api = new BrooklynApi(server, username, password);
+            if (username != null && password != null) {
+                api = new BrooklynApi(server, username, password);
+            } else {
+                api = new BrooklynApi(server);
+            }
         }
         return api;
     }
