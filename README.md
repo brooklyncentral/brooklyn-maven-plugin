@@ -55,7 +55,7 @@ Display help information on brooklyn-maven-plugin.
 The [example-pom](src/test/projects/example-app/pom.xml) project:
 
 * Deploys a blueprint from a file that runs a
-  [TomcatServer](https://brooklyn.incubator.apache.org/learnmore/catalog/entities/brooklyn.entity.webapp.tomcat.TomcatServer.html)
+  [TomcatServer](https://brooklyn.incubator.apache.org/learnmore/catalog/catalog-item.html#!entities/org.apache.brooklyn.entity.webapp.tomcat.TomcatServer)
   and an EmptySoftwareProcess.
 * Queries Brooklyn for the main URL of the Tomcat application (the
   `webapp.url` sensor).

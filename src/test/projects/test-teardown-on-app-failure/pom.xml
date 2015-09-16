@@ -36,7 +36,7 @@
             <plugin>
                 <groupId>io.brooklyn.maven</groupId>
                 <artifactId>brooklyn-maven-plugin</artifactId>
-                <version>0.2.0-SNAPSHOT</version>
+                <version>0.3.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>Deploy blueprint</id>
@@ -46,7 +46,7 @@
                         <configuration>
                             <server>${server}</server>
                             <blueprint>${project.basedir}/blueprint.yaml</blueprint>
-                            <propertyName>appId</propertyName>
+                            <applicationIdProperty>appId</applicationIdProperty>
                             <timeoutUnit>SECONDS</timeoutUnit>
                         </configuration>
                     </execution>

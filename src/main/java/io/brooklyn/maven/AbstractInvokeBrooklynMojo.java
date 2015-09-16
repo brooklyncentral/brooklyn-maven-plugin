@@ -24,18 +24,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.ws.rs.core.Response;
 
+import org.apache.brooklyn.api.mgmt.ha.ManagementNodeState;
+import org.apache.brooklyn.rest.client.BrooklynApi;
+import org.apache.brooklyn.rest.domain.Status;
+import org.apache.brooklyn.util.repeat.Repeater;
+import org.apache.brooklyn.util.time.Duration;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import brooklyn.management.ha.ManagementNodeState;
-import brooklyn.rest.client.BrooklynApi;
-import brooklyn.rest.domain.Status;
-import brooklyn.util.repeat.Repeater;
-import brooklyn.util.time.Duration;
 
 /**
  * An abstract class for Mojos that invoke actions on an existing Brooklyn server.
@@ -182,7 +181,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
 
     /**
      * Polls Brooklyn until the given application has the given status. Quits early if the application's
-     * status is {@link brooklyn.rest.domain.Status#ERROR} or {@link brooklyn.rest.domain.Status#UNKNOWN}
+     * status is {@link org.apache.brooklyn.rest.domain.Status#ERROR} or {@link org.apache.brooklyn.rest.domain.Status#UNKNOWN}
      * and desiredStatus is something else.
      * @return the final polled status
      */

@@ -10,8 +10,8 @@ project:
 name: My Blueprint
 location: localhost
 services:
-- type: brooklyn.entity.basic.EmptySoftwareProcess
-- type: brooklyn.entity.webapp.tomcat.TomcatServer
+- type: org.apache.brooklyn.entity.software.base.EmptySoftwareProcess
+- type: org.apache.brooklyn.entity.webapp.tomcat.TomcatServer
 ```
 
 * Queries Brooklyn for the main URL of the Tomcat application (the

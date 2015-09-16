@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.brooklyn.util.collections.Jsonya;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Rule;
@@ -30,7 +31,6 @@ import com.google.common.collect.ImmutableMap;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
-import brooklyn.util.collections.Jsonya;
 import io.brooklyn.junit.category.LiveTest;
 
 // Could use plugin-testing-harness' MojoRule when https://jira.codehaus.org/browse/MPLUGINTESTING-45

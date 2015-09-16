@@ -21,6 +21,9 @@ import java.nio.charset.Charset;
 import java.util.List;
 import javax.ws.rs.core.Response;
 
+import org.apache.brooklyn.rest.client.BrooklynApi;
+import org.apache.brooklyn.rest.domain.Status;
+import org.apache.brooklyn.rest.domain.TaskSummary;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -30,10 +33,6 @@ import com.google.common.base.Joiner;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-
-import brooklyn.rest.client.BrooklynApi;
-import brooklyn.rest.domain.Status;
-import brooklyn.rest.domain.TaskSummary;
 
 /**
  * Instruct an existing Brooklyn server to deploy the given blueprint.

@@ -24,6 +24,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.brooklyn.util.collections.Jsonya;
+import org.apache.brooklyn.util.net.Networking;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.junit.Before;
@@ -39,9 +41,6 @@ import com.google.common.io.Files;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import com.sun.jersey.core.util.Base64;
-
-import brooklyn.util.collections.Jsonya;
-import brooklyn.util.net.Networking;
 
 public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 

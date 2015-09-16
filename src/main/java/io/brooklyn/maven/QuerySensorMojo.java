@@ -18,6 +18,7 @@ package io.brooklyn.maven;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.brooklyn.rest.domain.Status;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -25,8 +26,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-
-import brooklyn.rest.domain.Status;
 
 /**
  * Fetch the value of a sensor on entities at a given server whose types

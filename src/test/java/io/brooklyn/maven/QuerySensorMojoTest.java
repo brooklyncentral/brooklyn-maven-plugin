@@ -21,13 +21,12 @@ import static org.junit.Assert.fail;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.brooklyn.util.collections.Jsonya;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-
-import brooklyn.util.collections.Jsonya;
 
 public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
 

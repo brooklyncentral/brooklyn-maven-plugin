@@ -23,14 +23,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.brooklyn.util.collections.Jsonya;
 import org.apache.maven.plugin.AbstractMojo;
 import org.junit.After;
 import org.junit.Before;
 
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
-
-import brooklyn.util.collections.Jsonya;
 
 public abstract class AbstractBrooklynMojoTest {
 
