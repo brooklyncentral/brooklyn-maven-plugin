@@ -54,7 +54,6 @@
                         <configuration>
                             <server>${server}</server>
                             <blueprint>${project.basedir}/blueprint.yaml</blueprint>
-                            <propertyName>appId</propertyName>
                             <timeout>30</timeout>
                             <timeoutUnit>SECONDS</timeoutUnit>
                         </configuration>
@@ -72,7 +71,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <echo>test-deploy-goal result: ${appId}</echo>
+                                <echo>test-deploy-goal result: ${brooklyn.app}</echo>
                             </tasks>
                         </configuration>
                     </execution>

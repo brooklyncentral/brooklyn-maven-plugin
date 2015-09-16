@@ -30,7 +30,7 @@
 
     <name>Brooklyn Maven Plugin</name>
     <description>
-        A Maven plugin to help test your Apache Brooklyn blueprints.
+        A Maven plugin to help test Apache Brooklyn blueprints.
     </description>
 
     <prerequisites>
@@ -43,7 +43,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <brooklyn.version>0.7.0-SNAPSHOT</brooklyn.version>
+        <brooklyn.version>0.7.0-incubating</brooklyn.version>
         <maven.version>3.2.5</maven.version>
         <mockwebserver.version>2.1.0</mockwebserver.version>
         <maven-plugin-plugin.version>3.3</maven-plugin-plugin.version>
@@ -137,16 +137,21 @@
                     <groupId>org.apache.brooklyn</groupId>
                     <artifactId>brooklyn-utils-rest-swagger</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.wordnik</groupId>
-                    <artifactId>swagger-core_2.9.1</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.brooklyn</groupId>
             <artifactId>brooklyn-utils-common</artifactId>
             <version>${brooklyn.version}</version>
+        </dependency>
+
+        <!-- Must be provided by plugin user for StartBrooklynMojo. -->
+        <!-- May tighten this dependency in future. Would be good to indicate exactly what modules are required. -->
+        <dependency>
+            <groupId>org.apache.brooklyn</groupId>
+            <artifactId>brooklyn-all</artifactId>
+            <version>${brooklyn.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -171,6 +176,7 @@
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-verifier</artifactId>
             <version>1.5</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -335,6 +341,28 @@
         </plugins>
     </reporting>
     <profiles>
+        <profile>
+            <!-- Disables tests that require a running Brooklyn. -->
+            <id>travis</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>io.brooklyn.junit.category.LiveTest</excludedGroups>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>io.brooklyn.junit.category.LiveTest</excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>release-sign-artifacts</id>
             <activation>

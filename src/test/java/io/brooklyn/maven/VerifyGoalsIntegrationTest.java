@@ -15,7 +15,6 @@
  */
 package io.brooklyn.maven;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -25,16 +24,20 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
 import brooklyn.util.collections.Jsonya;
+import io.brooklyn.junit.category.LiveTest;
 
 // Could use plugin-testing-harness' MojoRule when https://jira.codehaus.org/browse/MPLUGINTESTING-45
 // is resolved.
+// When using this class be careful that the version of the plugin being tested is the one expected.
+// mvn clean install -DskipTests && mvn clean install -Dtest=VerifyGoalsIntegrationTest generally
+// does the trick.
 public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
 
     private static final String APPLICATION = "fedcba";
@@ -79,7 +82,7 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
     }
 
     @Test
-    public void testStopGoal() throws Exception {
+    public void testStopApplicationGoal() throws Exception {
         server.enqueue(new MockResponse());
         server.play();
 
@@ -93,23 +96,15 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
     }
 
     @Test
+    @Category(LiveTest.class)
     public void testWholeCaboodle() throws Exception {
-        final String sensorVal = "Eric";
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APPLICATION).toString()));
-        server.enqueue(applicationStatusResponse("RUNNING"));
-        server.enqueue(newJsonResponse()
-                .setBody(Jsonya.newInstance().put(APPLICATION, sensorVal).toString()));
-        server.enqueue(new MockResponse());
-        server.play();
-
         File dir = resources.getBasedir("example-app");
         Verifier verifier = new Verifier(dir.getAbsolutePath());
-        verifier.getSystemProperties().put("server", server.getUrl("/").toString());
-        verifier.executeGoals(ImmutableList.of("post-integration-test"));
+        verifier.executeGoal("post-integration-test");
         verifier.verifyErrorFreeLog();
-        verifier.verifyTextInLog("Application: " + APPLICATION);
-        verifier.verifyTextInLog("Sensor value: " + sensorVal);
-        assertEquals(4, server.getRequestCount());
+        verifier.verifyTextInLog("Maven plugin example results");
+        verifier.verifyTextInLog("Application: ");
+        verifier.verifyTextInLog("Sensor value: http://");
     }
 
 }

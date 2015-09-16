@@ -1,3 +1,2 @@
 language: java
-script: mvn clean install -Dbrooklyn.test.timeout=30
-
+script: mvn clean install -Ptravis -Dbrooklyn.test.timeout=30

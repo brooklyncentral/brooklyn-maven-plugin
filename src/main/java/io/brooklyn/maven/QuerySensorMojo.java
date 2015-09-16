@@ -56,7 +56,7 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
      * The property to set to the sensor's value.
      */
     @Parameter(defaultValue = "brooklyn.sensor")
-    private String propertyName;
+    private String sensorValueProperty;
 
     /**
      * Regular expression to match entities by type.
@@ -88,11 +88,11 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
         this(null, null, null, null, null);
     }
 
-    public QuerySensorMojo(URL server, String application, String sensor, String propertyName, String typeRegex) {
+    public QuerySensorMojo(URL server, String application, String sensor, String sensorValueProperty, String typeRegex) {
         super(server);
         this.application = application;
         this.sensor = sensor;
-        this.propertyName = propertyName;
+        this.sensorValueProperty = sensorValueProperty;
         this.typeRegex = typeRegex;
     }
 
@@ -114,8 +114,8 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
         } else {
             value = Iterables.toString(matches.values());
         }
-        getLog().debug("Setting " + propertyName + " to " + value);
-        getProject().getProperties().setProperty(propertyName, value);
+        getLog().debug("Setting " + sensorValueProperty + " to " + value);
+        getProject().getProperties().setProperty(sensorValueProperty, value);
     }
 
     void setWaitForRunning() {

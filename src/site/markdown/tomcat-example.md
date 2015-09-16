@@ -25,40 +25,38 @@ The important bits of the pom are:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
     <executions>
         <execution>
             <id>Deploy blueprint</id>
             <goals>
                 <goal>deploy</goal>
-            </goals>
-            <configuration>
-                <server>${server}</server>
-                <blueprint>${project.basedir}/blueprint.yaml</blueprint>
-                <propertyName>appId</propertyName>
-            </configuration>
-        </execution>
-        <execution>
-            <id>Query sensor value</id>
-            <phase>pre-integration-test</phase>
-            <goals>
                 <goal>sensor</goal>
-            </goals>
-            <configuration>
-                <server>${server}</server>
-                <application>${appId}</application>
-                <sensor>webapp.url</sensor>
-                <typeRegex>.*Tomcat.*</typeRegex>
-                <propertyName>sensorVal</propertyName>
-            </configuration>
-        </execution>
-        <execution>
-            <id>Stop the application</id>
-            <goals>
                 <goal>stop</goal>
             </goals>
             <configuration>
-                <server>${server}</server>
-                <application>${appId}</application>
+                <blueprint>${project.basedir}/blueprint.yaml</blueprint>
+                <sensor>webapp.url</sensor>
+                <typeRegex>.*Tomcat.*</typeRegex>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+<plugin>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <executions>
+        <execution>
+            <phase>integration-test</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <tasks>
+                    <echo>Maven plugin example results:</echo>
+                    <echo>Server was running at ${brooklyn.server}</echo>
+                    <echo>Application: ${brooklyn.app}</echo>
+                    <echo>Sensor value: ${brooklyn.sensor}</echo>
+                </tasks>
             </configuration>
         </execution>
     </executions>

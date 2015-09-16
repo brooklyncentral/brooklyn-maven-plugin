@@ -59,10 +59,10 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
     private String blueprintEncoding;
 
     /**
-     * The property to set to the application id.
+     * The property to set to the started application's id.
      */
     @Parameter(defaultValue = "brooklyn.app")
-    private String propertyName;
+    private String applicationIdProperty;
 
     /**
      * Configure the plugin to wait for the deployed blueprint to be {@link Status#RUNNING running}
@@ -95,11 +95,11 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
         this(server, blueprint, null);
     }
 
-    public DeployBlueprintMojo(URL server, String blueprint, String propertyName) {
+    public DeployBlueprintMojo(URL server, String blueprint, String applicationIdProperty) {
         super(server);
         this.blueprint = blueprint;
         this.blueprintEncoding = "UTF-8";
-        this.propertyName = propertyName;
+        this.applicationIdProperty = applicationIdProperty;
         this.waitForRunning = true;
         this.stopAppOnDeployError = true;
     }
@@ -115,9 +115,9 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             if (waitForRunning) {
                 waitForRunningAndThrowOtherwise(application);
             }
-            if (propertyName != null) {
-                getProject().getProperties().setProperty(propertyName, task.getEntityId());
-                getLog().debug("Set property '" + propertyName + "' to: " + application);
+            if (applicationIdProperty != null) {
+                getProject().getProperties().setProperty(applicationIdProperty, application);
+                getLog().debug("Set property '" + applicationIdProperty + "' to: " + application);
             } else {
                 getLog().info("No property to set to new application ID");
             }
