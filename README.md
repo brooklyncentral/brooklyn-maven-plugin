@@ -62,41 +62,20 @@ The important bits of the pom are:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
     <executions>
         <execution>
             <id>Deploy blueprint</id>
             <goals>
                 <goal>deploy</goal>
-            </goals>
-            <configuration>
-                <server>${server}</server>
-                <blueprint>${project.basedir}/blueprint.yaml</blueprint>
-                <propertyName>appId</propertyName>
-            </configuration>
-        </execution>
-        <execution>
-            <id>Query sensor value</id>
-            <phase>pre-integration-test</phase>
-            <goals>
                 <goal>sensor</goal>
-            </goals>
-            <configuration>
-                <server>${server}</server>
-                <application>${appId}</application>
-                <sensor>webapp.url</sensor>
-                <typeRegex>.*Tomcat.*</typeRegex>
-                <propertyName>sensorVal</propertyName>
-            </configuration>
-        </execution>
-        <execution>
-            <id>Stop the application</id>
-            <goals>
                 <goal>stop</goal>
             </goals>
             <configuration>
                 <server>${server}</server>
-                <application>${appId}</application>
+                <blueprint>${project.basedir}/blueprint.yaml</blueprint>
+                <sensor>webapp.url</sensor>
+                <typeRegex>.*Tomcat.*</typeRegex>
             </configuration>
         </execution>
     </executions>
@@ -112,6 +91,7 @@ At the end of the build you should see output like:
 [INFO] --- maven-antrun-plugin:1.3:run (default) @ test ---
 [INFO] Executing tasks
     [echo] Maven plugin example results:
+    [echo] Server was running at http://127.0.01:8081
     [echo] Application: T0tERELL
     [echo] Sensor value: http://127.0.0.1:8080/
 ```

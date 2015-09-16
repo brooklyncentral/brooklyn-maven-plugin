@@ -149,6 +149,15 @@
             <version>${brooklyn.version}</version>
         </dependency>
 
+        <!-- Must be provided by plugin user for StartBrooklynMojo. -->
+        <!-- May tighten this dependency in future. Would be good to indicate exactly what modules are required. -->
+        <dependency>
+            <groupId>org.apache.brooklyn</groupId>
+            <artifactId>brooklyn-all</artifactId>
+            <version>${brooklyn.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
