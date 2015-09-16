@@ -14,7 +14,7 @@ Include this plugin in your pom:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.1.0</version>
+    <version>${latestPluginVersion}</version>
 </plugin>
 ```
 
