@@ -1,7 +1,7 @@
 Brooklyn Maven Plugin
 =====================
 
-A Maven plugin to help test your [Apache
+A Maven plugin to help test [Apache
 Brooklyn](https://brooklyn.incubator.apache.org/) blueprints. For full
 documentation see [the plugin website]
 (http://brooklyncentral.github.io/brooklyn-maven-plugin/index.html).

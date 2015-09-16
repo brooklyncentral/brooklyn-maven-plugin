@@ -30,7 +30,7 @@
 
     <name>Brooklyn Maven Plugin</name>
     <description>
-        A Maven plugin to help test your Apache Brooklyn blueprints.
+        A Maven plugin to help test Apache Brooklyn blueprints.
     </description>
 
     <prerequisites>
