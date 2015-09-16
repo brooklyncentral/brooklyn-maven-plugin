@@ -43,7 +43,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <brooklyn.version>0.7.0-SNAPSHOT</brooklyn.version>
+        <brooklyn.version>0.7.0-incubating</brooklyn.version>
         <maven.version>3.2.5</maven.version>
         <mockwebserver.version>2.1.0</mockwebserver.version>
         <maven-plugin-plugin.version>3.3</maven-plugin-plugin.version>
@@ -136,10 +136,6 @@
                 <exclusion>
                     <groupId>org.apache.brooklyn</groupId>
                     <artifactId>brooklyn-utils-rest-swagger</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.wordnik</groupId>
-                    <artifactId>swagger-core_2.9.1</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
