@@ -50,7 +50,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
      */
     @Parameter(
             required = true,
-            property = "brooklyn.url")
+            property = "brooklyn.server")
     protected URL server;
 
     /**
