@@ -24,12 +24,14 @@ import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.google.common.collect.ImmutableMap;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
 import brooklyn.util.collections.Jsonya;
+import io.brooklyn.junit.category.LiveTest;
 
 // Could use plugin-testing-harness' MojoRule when https://jira.codehaus.org/browse/MPLUGINTESTING-45
 // is resolved.
@@ -94,6 +96,7 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
     }
 
     @Test
+    @Category(LiveTest.class)
     public void testWholeCaboodle() throws Exception {
         File dir = resources.getBasedir("example-app");
         Verifier verifier = new Verifier(dir.getAbsolutePath());
