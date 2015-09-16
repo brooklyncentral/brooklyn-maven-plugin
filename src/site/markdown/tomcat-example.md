@@ -73,6 +73,7 @@ At the end of the build you should see output like:
 [INFO] --- maven-antrun-plugin:1.3:run (default) @ test ---
 [INFO] Executing tasks
     [echo] Maven plugin example results:
+    [echo] Server was running at http://127.0.0.1:8081/
     [echo] Application: T0tERELL
     [echo] Sensor value: http://127.0.0.1:8080/
 ```

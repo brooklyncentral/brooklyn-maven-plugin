@@ -38,6 +38,11 @@ a regular expression.
 Instruct a Brooklyn server to stop the application with the given ID.
 </dd>
 
+<dt><strong>stop-brooklyn</strong></dt>
+<dd>
+Instruct a Brooklyn server to shut down
+</dd>
+
 <dt><strong>help</strong></dt>
 <dd>
 Display help information on brooklyn-maven-plugin.

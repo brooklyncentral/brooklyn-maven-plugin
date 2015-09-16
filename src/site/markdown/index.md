@@ -24,3 +24,8 @@ Instruct a Brooklyn server to stop the application with the given ID.
 </dd>
 </dl>
 
+<dt><strong>stop-brooklyn</strong></dt>
+<dd>
+Instruct a Brooklyn server to shut down
+</dd>
+</dl>
