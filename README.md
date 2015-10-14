@@ -38,7 +38,7 @@ a regular expression.
 Instruct a Brooklyn server to stop the application with the given ID.
 </dd>
 
-<dt><strong>stop-brooklyn</strong></dt>
+<dt><strong>stop-server</strong></dt>
 <dd>
 Instruct a Brooklyn server to shut down
 </dd>

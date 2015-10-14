@@ -24,7 +24,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 /**
  * Instruct a Brooklyn server to shut down.
  */
-@Mojo(name = "stop-brooklyn",
+@Mojo(name = "stop-server",
         defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST)
 public class StopBrooklynMojo extends AbstractInvokeBrooklynMojo {
 
