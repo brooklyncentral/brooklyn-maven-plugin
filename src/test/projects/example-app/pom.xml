@@ -9,10 +9,6 @@
 
     <name>Test of Brooklyn Maven Plugin</name>
 
-    <properties>
-        <server>http://127.0.0.1:8081</server>
-    </properties>
-
     <pluginRepositories>
         <pluginRepository>
             <id>sonatype-nexus-snapshots</id>
@@ -27,6 +23,14 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.brooklyn</groupId>
+            <artifactId>brooklyn-all</artifactId>
+            <version>0.8.0-incubating</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -35,14 +39,16 @@
                 <version>0.3.0-SNAPSHOT</version>
                 <executions>
                     <execution>
-                        <id>Deploy blueprint</id>
+                        <id>Run Brooklyn</id>
                         <goals>
+                            <goal>start-server</goal>
                             <goal>deploy</goal>
                             <goal>sensor</goal>
                             <goal>stop</goal>
+                            <goal>stop-server</goal>
                         </goals>
                         <configuration>
-                            <server>${server}</server>
+                            <bindPort>${bindPort}</bindPort>
                             <blueprint>${project.basedir}/blueprint.yaml</blueprint>
                             <sensor>webapp.url</sensor>
                             <typeRegex>.*Tomcat.*</typeRegex>
@@ -61,8 +67,8 @@
                         <configuration>
                             <tasks>
                                 <echo>Maven plugin example results:</echo>
-                                <echo>Server was running at ${brooklyn.server}</echo>
-                                <echo>Application: ${brooklyn.app}</echo>
+                                <echo>Server:       ${brooklyn.server}</echo>
+                                <echo>Application:  ${brooklyn.app}</echo>
                                 <echo>Sensor value: ${brooklyn.sensor}</echo>
                             </tasks>
                         </configuration>

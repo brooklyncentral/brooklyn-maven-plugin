@@ -28,7 +28,6 @@ If you are using a snapshot release you should also include this plugin reposito
 </pluginRepositories>
 ```
 
-The plugin works with existing Brooklyn servers. Follow Brooklyn's [getting
-started](https://brooklyn.incubator.apache.org/v/latest/start/running.html)
+Follow Brooklyn's [getting started](https://brooklyn.incubator.apache.org/v/latest/start/running.html)
 guide for instructions on running Brooklyn.
 

@@ -23,7 +23,7 @@
     <artifactId>test</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
-    <name>Brooklyn Maven plugin sensor goal test</name>
+    <name>Brooklyn Maven plugin stop goal test</name>
 
     <pluginRepositories>
         <pluginRepository>

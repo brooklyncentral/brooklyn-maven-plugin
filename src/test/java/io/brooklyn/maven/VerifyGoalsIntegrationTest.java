@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.brooklyn.util.collections.Jsonya;
+import org.apache.brooklyn.util.net.Networking;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Rule;
@@ -97,13 +98,32 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
 
     @Test
     @Category(LiveTest.class)
+    public void testStartStopBrooklynGoals() throws Exception {
+        int port = Networking.nextAvailablePort(57000);
+        File dir = resources.getBasedir("test-start-stop-server");
+        Verifier verifier = new Verifier(dir.getAbsolutePath());
+        verifier.setMavenDebug(true);
+        verifier.executeGoal("post-integration-test", ImmutableMap.of(
+                "bindPort", String.valueOf(port)));
+        verifier.verifyErrorFreeLog();
+        verifier.verifyTextInLog("Server running at http://127.0.0.1:" + port);
+        verifier.verifyTextInLog("Server version: 0.8.0-incubating");
+        verifier.verifyTextInLog("Stopping server at http://127.0.0.1:" + port);
+    }
+
+    @Test
+    @Category(LiveTest.class)
     public void testWholeCaboodle() throws Exception {
+        int port = Networking.nextAvailablePort(58000);
         File dir = resources.getBasedir("example-app");
         Verifier verifier = new Verifier(dir.getAbsolutePath());
-        verifier.executeGoal("post-integration-test");
+        verifier.setMavenDebug(true);
+        verifier.executeGoal("post-integration-test", ImmutableMap.of(
+                "bindPort", String.valueOf(port)));
         verifier.verifyErrorFreeLog();
         verifier.verifyTextInLog("Maven plugin example results");
-        verifier.verifyTextInLog("Application: ");
+        verifier.verifyTextInLog("Server:       http://127.0.0.1:" + port);
+        verifier.verifyTextInLog("Application:  ");
         verifier.verifyTextInLog("Sensor value: http://");
     }
 

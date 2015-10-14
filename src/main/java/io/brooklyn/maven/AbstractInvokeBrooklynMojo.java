@@ -31,6 +31,7 @@ import org.apache.brooklyn.util.repeat.Repeater;
 import org.apache.brooklyn.util.time.Duration;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
@@ -41,7 +42,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
 
-    @Parameter(defaultValue = "${project}", readonly = true)
+    @Component
     private MavenProject project;
 
     /**

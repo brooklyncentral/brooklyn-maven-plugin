@@ -22,6 +22,12 @@ Include this plugin in your pom:
 ### Goals
 
 <dl>
+<dt><strong>start-server</strong></dt>
+<dd>
+Run a Brooklyn server.
+</dd>
+
+<dl>
 <dt><strong>deploy</strong></dt>
 <dd>
 Instruct an existing Brooklyn server to deploy the given blueprint.
