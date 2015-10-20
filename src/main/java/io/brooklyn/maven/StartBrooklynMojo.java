@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.brooklyn.rest.api.ServerApi;
 import org.apache.brooklyn.rest.client.BrooklynApi;
@@ -52,6 +53,7 @@ import org.apache.maven.shared.utils.cli.StreamConsumer;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 import io.brooklyn.maven.util.Context;
 
@@ -70,10 +72,10 @@ public class StartBrooklynMojo extends AbstractMojo {
     @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     private ArtifactRepository localRepository;
 
-    @Component
+    @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
-    @Component
+    @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
     @Component
@@ -82,7 +84,8 @@ public class StartBrooklynMojo extends AbstractMojo {
     /**
      * The main class of the forked process.
      */
-    @Parameter(property = "brooklyn.main",
+    @Parameter(
+            property = "brooklyn.main",
             defaultValue = "org.apache.brooklyn.cli.Main",
             required = true)
     private String mainClass;
@@ -90,7 +93,8 @@ public class StartBrooklynMojo extends AbstractMojo {
     /**
      * The IP address of the NIC to bind the Brooklyn Management Console to.
      */
-    @Parameter(property = "brooklyn.bindAddress",
+    @Parameter(
+            property = "brooklyn.bindAddress",
             defaultValue = "127.0.0.1",
             required = true)
     private String bindAddress;
@@ -99,18 +103,38 @@ public class StartBrooklynMojo extends AbstractMojo {
      * The port for the Brooklyn REST server to run on. An available port will
      * be chosen at random if this parameter is not given.
      */
-    @Parameter(property = SERVER_PORT_PROPERTY)
+    @Parameter(
+            property = SERVER_PORT_PROPERTY)
     private String bindPort;
 
     /**
      * The property to set to the newly-started server's URL.
      */
-    @Parameter(defaultValue = "brooklyn.server")
+    @Parameter(
+            defaultValue = "brooklyn.server")
     private String serverUrlProperty;
 
-    @Parameter(property = "waitForServerUp",
+    @Parameter(
             defaultValue = "true")
     private boolean waitForServerUp;
+
+    @Parameter(
+            defaultValue = "1")
+    private Integer startTimeout;
+
+    @Parameter(
+            defaultValue = "MINUTES")
+    private TimeUnit startTimeoutUnit;
+
+    /**
+     * Constructor for use by Maven/Guice.
+     */
+    StartBrooklynMojo() {
+        // Values are overwritten by Guice when instances are created in a build.
+        this.startTimeout = 1;
+        this.startTimeoutUnit = TimeUnit.MINUTES;
+    }
+
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -171,19 +195,12 @@ public class StartBrooklynMojo extends AbstractMojo {
         Path workingDir = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME).toAbsolutePath();
         Path confDir = workingDir.resolve("conf");
         confDir.toFile().mkdirs();
-        // todo store in resources
-        String logback = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<configuration>\n" +
-                "    <property name=\"logging.basename\" scope=\"context\" value=\"brooklyn\" />\n" +
-                "    <property name=\"logging.dir\" scope=\"context\" value=\"./\" />\n" +
-                "    <include resource=\"logback-main.xml\"/>\n" +
-                "</configuration>";
         try {
+            String logback = Resources.asCharSource(getClass().getResource("/logback.xml"), Charsets.UTF_8).read();
             Files.write(logback, confDir.resolve("logback.xml").toFile(), Charsets.UTF_8);
         } catch (IOException e) {
             throw new MojoExecutionException("Error writing logback configuration", e);
         }
-
         return workingDir.toString();
     }
 
@@ -220,20 +237,20 @@ public class StartBrooklynMojo extends AbstractMojo {
      */
     private String reserveWebServerPort() throws MojoExecutionException {
         executeMojo(
-            plugin(
-                groupId("org.codehaus.mojo"),
-                artifactId("build-helper-maven-plugin"),
-                version("1.9.1")
-            ),
-            goal("reserve-network-port"),
-            configuration(
-                element(name("portNames"), element(name("portName"), SERVER_PORT_PROPERTY))
-            ),
-            executionEnvironment(
-                    project,
-                    session,
-                pluginManager
-            )
+                plugin(
+                        groupId("org.codehaus.mojo"),
+                        artifactId("build-helper-maven-plugin"),
+                        version("1.9.1")
+                ),
+                goal("reserve-network-port"),
+                configuration(
+                        element(name("portNames"), element(name("portName"), SERVER_PORT_PROPERTY))
+                ),
+                executionEnvironment(
+                        project,
+                        session,
+                        pluginManager
+                )
         );
         return project.getProperties().getProperty(SERVER_PORT_PROPERTY);
     }
@@ -243,9 +260,8 @@ public class StartBrooklynMojo extends AbstractMojo {
      */
     private void waitForServerStart(String url) {
         final ServerApi api = new BrooklynApi(url).getServerApi();
-        // todo: inject timeout
         getLog().info("Waiting for server at " + url + " to be ready");
-        Duration timeout = Duration.ONE_MINUTE;
+        Duration timeout = Duration.of(startTimeout, startTimeoutUnit);
         boolean isUp = Repeater.create("Waiting for server at " + url + " to be ready")
                 .every(Duration.ONE_SECOND)
                 .limitTimeTo(timeout)
