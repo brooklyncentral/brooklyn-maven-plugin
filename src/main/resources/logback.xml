@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="logging.basename" scope="context" value="brooklyn"/>
+    <property name="logging.dir" scope="context" value="./"/>
+    <include resource="logback-main.xml"/>
+</configuration>

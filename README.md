@@ -22,6 +22,12 @@ Include this plugin in your pom:
 ### Goals
 
 <dl>
+<dt><strong>start-server</strong></dt>
+<dd>
+Run a Brooklyn server.
+</dd>
+
+<dl>
 <dt><strong>deploy</strong></dt>
 <dd>
 Instruct an existing Brooklyn server to deploy the given blueprint.
@@ -38,7 +44,7 @@ a regular expression.
 Instruct a Brooklyn server to stop the application with the given ID.
 </dd>
 
-<dt><strong>stop-brooklyn</strong></dt>
+<dt><strong>stop-server</strong></dt>
 <dd>
 Instruct a Brooklyn server to shut down
 </dd>

@@ -40,11 +40,13 @@
     <url>https://github.com/brooklyncentral/brooklyn-maven-plugin</url>
 
     <properties>
+        <java.version>1.7</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <brooklyn.version>0.8.0-incubating</brooklyn.version>
         <maven.version>3.2.5</maven.version>
+
         <mockwebserver.version>2.1.0</mockwebserver.version>
         <maven-plugin-plugin.version>3.3</maven-plugin-plugin.version>
         <!-- Matching Maven plugin norm rather than Brooklyn norm -->
@@ -123,6 +125,18 @@
             <artifactId>maven-core</artifactId>
             <version>${maven.version}</version>
         </dependency>
+        <!--Supplies command line utils-->
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-shared-utils</artifactId>
+            <version>0.9</version>
+        </dependency>
+        <!--Programmatically invoke other Mojos-->
+        <dependency>
+            <groupId>org.twdata.maven</groupId>
+            <artifactId>mojo-executor</artifactId>
+            <version>2.2.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.brooklyn</groupId>
             <artifactId>brooklyn-api</artifactId>
@@ -143,15 +157,6 @@
             <groupId>org.apache.brooklyn</groupId>
             <artifactId>brooklyn-utils-common</artifactId>
             <version>${brooklyn.version}</version>
-        </dependency>
-
-        <!-- Must be provided by plugin user for StartBrooklynMojo. -->
-        <!-- May tighten this dependency in future. Would be good to indicate exactly what modules are required. -->
-        <dependency>
-            <groupId>org.apache.brooklyn</groupId>
-            <artifactId>brooklyn-all</artifactId>
-            <version>${brooklyn.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -198,8 +203,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.1</version>
                     <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -304,6 +309,19 @@
                 <configuration>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
                 </configuration>
+            </plugin>
+            <plugin>
+                <!--Generates Javadoc-->
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-component-metadata</artifactId>
+                <version>1.5.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-metadata</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
