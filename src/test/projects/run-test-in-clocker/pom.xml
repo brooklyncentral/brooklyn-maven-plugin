@@ -1,0 +1,140 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>test</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+
+    <name>Test of Brooklyn Maven Plugin deploying Clocker</name>
+
+    <repositories>
+        <!--Cloudsoft repo contains Clocker releases-->
+        <repository>
+            <id>cloudsoft-releases</id>
+            <url>http://ccweb.cloudsoftcorp.com/maven/libs-release-local/</url>
+        </repository>
+        <repository>
+            <id>cloudsoft-snapshots</id>
+            <url>http://ccweb.cloudsoftcorp.com/maven/libs-snapshot-local/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cloudsoft-developers</id>
+            <url>http://developers.cloudsoftcorp.com/download/maven2/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.brooklyn</groupId>
+            <artifactId>brooklyn-all</artifactId>
+            <version>0.8.0-incubating</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.brooklyn.clocker</groupId>
+            <artifactId>brooklyn-clocker-dist</artifactId>
+            <version>1.1.0-PREVIEW.20151014</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!--Need for ca-cert.pem resource-->
+            <groupId>io.brooklyn.clocker</groupId>
+            <artifactId>brooklyn-clocker-docker</artifactId>
+            <version>1.1.0-PREVIEW.20151014</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.brooklyn.maven</groupId>
+                <artifactId>brooklyn-maven-plugin</artifactId>
+                <version>0.3.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>Run and deploy Clocker</id>
+                        <goals>
+                            <goal>start-server</goal>
+                            <goal>deploy</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>brooklyn.clocker.Main</mainClass>
+                            <bindPort>${bindPort}</bindPort>
+                            <blueprint>${project.basedir}/docker-cloud-with-weave.yaml</blueprint>
+                            <timeout>30</timeout><!--minutes-->
+                            <arguments>
+                                <argument>--catalogInitial</argument>
+                                <argument>${project.basedir}/clocker.bom</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Deploy, test and stop</id>
+                        <!--Changes the phase of the deploy goal to make sure Clocker is stopped if the test app fails.-->
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                            <goal>sensor</goal>
+                            <goal>stop</goal>
+                        </goals>
+                        <configuration>
+                            <blueprint>${project.basedir}/test-blueprint.yaml</blueprint>
+                            <typeRegex>.*Whizz.*</typeRegex>
+                            <sensor>some.sensor</sensor>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Stop Clocker</id>
+                        <goals>
+                            <goal>stop-server</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>Maven plugin example results:</echo>
+                                <echo>Server:       ${brooklyn.server}</echo>
+                                <echo>Application:  ${brooklyn.app}</echo>
+                                <echo>Sensor value: ${brooklyn.sensor}</echo>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

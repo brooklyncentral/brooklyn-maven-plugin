@@ -1,0 +1,5 @@
+
+location: my-docker-cloud
+
+services:
+- type: com.example.WhizzNewEntity
