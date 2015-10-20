@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -107,6 +108,10 @@ public class StartBrooklynMojo extends AbstractMojo {
             property = SERVER_PORT_PROPERTY)
     private String bindPort;
 
+    @Parameter(
+            required = false)
+    private List<String> arguments;
+
     /**
      * The property to set to the newly-started server's URL.
      */
@@ -166,6 +171,8 @@ public class StartBrooklynMojo extends AbstractMojo {
             getLog().info("Server running at " + serverUrl);
             BrooklynApi api = new BrooklynApi(serverUrl);
             getLog().info("Server version: " + api.getServerApi().getVersion().getVersion());
+        } else {
+            getLog().info("Server starting at " + serverUrl);
         }
     }
 
@@ -177,14 +184,17 @@ public class StartBrooklynMojo extends AbstractMojo {
         cl.setExecutable("java");
         cl.createArg().setValue("-classpath");
         cl.createArg().setValue(buildClasspath());
-        // todo: inject
-        cl.createArg().setValue("-Droot.level=OFF");
         cl.createArg().setValue(mainClass);
         cl.createArg().setValue("launch");
         cl.createArg().setValue("--bindAddress");
         cl.createArg().setValue(bindAddress);
         cl.createArg().setValue("--port");
         cl.createArg().setValue(port);
+        if (arguments != null) {
+            for (String argument : arguments) {
+                cl.createArg().setValue(argument);
+            }
+        }
         return cl;
     }
 
