@@ -98,7 +98,6 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
     }
 
     @Test
-    @Category(LiveTest.class)
     public void testStartStopBrooklynGoals() throws Exception {
         int port = Networking.nextAvailablePort(57000);
         File dir = resources.getBasedir("test-start-stop-server");
