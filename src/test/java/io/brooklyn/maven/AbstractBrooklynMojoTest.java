@@ -39,6 +39,8 @@ public abstract class AbstractBrooklynMojoTest {
      */
     private static final String TIMEOUT_PROPERTY = "brooklyn.test.timeout";
 
+    protected static final String APP_ID = "fedcba";
+
     MockWebServer server;
 
     @Before
@@ -102,6 +104,14 @@ public abstract class AbstractBrooklynMojoTest {
     protected MockResponse newJsonResponse() {
         return new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    }
+
+    protected MockResponse deployApplicationResponse() {
+        String body = Jsonya.newInstance()
+                .put("id", "taskid")
+                .put("entityId", APP_ID)
+                .toString();
+        return newJsonResponse().setBody(body);
     }
 
     protected MockResponse applicationStatusResponse(String status) {

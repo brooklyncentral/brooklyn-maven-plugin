@@ -1,0 +1,34 @@
+{
+  "id": "UeHmkkwK",
+  "displayName": "start",
+  "description": "Invoking effector start on Application (Nailx7in) with parameters {locations=[]}",
+  "entityId": "Nailx7in",
+  "entityDisplayName": "Application (Nailx7in)",
+  "tags": [],
+  "submitTimeUtc": 1445453998921,
+  "startTimeUtc": 1445453998922,
+  "endTimeUtc": 1445453999635,
+  "currentStatus": "Failed",
+  "result": "RESULT_MESSAGE",
+  "isError": true,
+  "isCancelled": false,
+  "children": [
+    {
+      "link": "/v1/activities/J3488vxA",
+      "metadata": {
+        "id": "J3488vxA",
+        "taskName": "invoking start[locations] on 1 node",
+        "entityId": "Nailx7in",
+        "entityDisplayName": "Application (Nailx7in)"
+      }
+    }
+  ],
+  "submittedByTask": null,
+  "detailedStatus": "DETAILED_STATUS_MESSAGE",
+  "streams": {},
+  "links": {
+    "self": "/v1/activities/UeHmkkwK",
+    "children": "/v1/activities/UeHmkkwK/children",
+    "entity": "/v1/applications/Nailx7in/entities/Nailx7in"
+  }
+}

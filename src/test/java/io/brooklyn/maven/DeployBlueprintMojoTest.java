@@ -24,7 +24,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.brooklyn.util.collections.Jsonya;
 import org.apache.brooklyn.util.net.Networking;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
@@ -38,13 +37,13 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import com.sun.jersey.core.util.Base64;
 
 public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 
-    private static final String APP_ID = "fedcba";
     private static final String NEW_APP_PROPERTY = "brooklyn.app.id";
 
     @Rule
@@ -68,7 +67,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
     @Test
     public void testPostsConfiguredBlueprintToServerAndSetsConfiguredProperty() throws Exception {
         // Just enough of a task summary to work.
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("STARTING"));
         server.enqueue(applicationStatusResponse("RUNNING"));
         server.play();
@@ -105,7 +104,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
     public void testLoadsBlueprintFromUrl() throws Exception {
         // Pretending to be both the server hosting the blueprint and Brooklyn.
         server.enqueue(new MockResponse().setBody(YAML));
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("RUNNING"));
         server.play();
 
@@ -171,7 +170,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 
     @Test
     public void testDeployFailsIfAppStartTakesTooLong() throws Exception {
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("STARTING"));
         server.enqueue(applicationStatusResponse("STARTING"));
         server.enqueue(applicationStatusResponse("STARTING"));
@@ -190,9 +189,11 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 
     @Test
     public void testBailsOutIfDeployedAppIsOnFire() throws Exception {
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("STARTING"));
         server.enqueue(applicationStatusResponse("ERROR"));
+        // mojo checks for the status of the task
+        server.enqueue(deployApplicationResponse());
         server.play();
         DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
@@ -208,10 +209,12 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 
     @Test
     public void testBailsOutIfDeployedAppStatusIsUnknown() throws Exception {
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("STARTING"));
         server.enqueue(applicationStatusResponse("STARTING"));
         server.enqueue(applicationStatusResponse("UNKNOWN"));
+        // mojo checks for the status of the task
+        server.enqueue(deployApplicationResponse());
         server.play();
         DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
@@ -244,7 +247,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         final String user = "eric.wimp";
         final String password = "banana";
 
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APP_ID).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("RUNNING"));
         server.play();
         DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
@@ -260,6 +263,30 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         String authPass = userpass.substring(userpass.indexOf(":") + 1);
         assertEquals(user, authUser);
         assertEquals(password, authPass);
+    }
+
+    @Test
+    public void testGetsDetailedTaskStatusWhenDeployFails() throws Exception {
+        server.enqueue(deployApplicationResponse());
+        server.enqueue(applicationStatusResponse("STARTING"));
+        server.enqueue(applicationStatusResponse("ERROR"));
+        server.enqueue(newJsonResponse().setBody(Resources.toByteArray(getClass().getResource("failed-task-status.json"))));
+        server.play();
+
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
+        mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
+        mojo.setNoStopAppOnDeployError();
+
+        final String expectedResult = "RESULT_MESSAGE";
+
+        try {
+            executeMojoWithTimeout(mojo);
+            fail("Expected exception when server responded with error status");
+        } catch (MojoFailureException e) {
+            assertTrue("Expected exception message to contain result and detailed status of deploy task. Is: " + e.getMessage(),
+                    e.getMessage().contains(expectedResult));
+        }
+
     }
 
 }

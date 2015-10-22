@@ -1,0 +1,4 @@
+# Deploys an entity that throws an exception when starting.
+location: localhost
+services:
+- type: com.example.test.ExceptionalEntity
