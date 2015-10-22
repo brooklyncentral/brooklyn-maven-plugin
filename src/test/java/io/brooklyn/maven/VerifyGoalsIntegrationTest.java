@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.brooklyn.util.collections.Jsonya;
 import org.apache.brooklyn.util.net.Networking;
+import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Rule;
@@ -49,7 +50,7 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
     @Test
     public void testDeployGoal() throws Exception {
         // Just enough of a task summary to work.
-        server.enqueue(newJsonResponse().setBody(Jsonya.newInstance().put("entityId", APPLICATION).toString()));
+        server.enqueue(deployApplicationResponse());
         server.enqueue(applicationStatusResponse("RUNNING"));
         server.play();
 
@@ -125,6 +126,22 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
         verifier.verifyTextInLog("Server:       http://127.0.0.1:" + port);
         verifier.verifyTextInLog("Application:  ");
         verifier.verifyTextInLog("Sensor value: http://");
+    }
+
+    @Test
+    public void testTaskResultReportedOnErrors() throws Exception {
+        File dir = resources.getBasedir("test-task-result-reported");
+        Verifier verifier = new Verifier(dir.getAbsolutePath());
+        verifier.setMavenDebug(true);
+        try {
+            verifier.executeGoal("post-integration-test");
+        } catch (VerificationException e) {
+            // Expected.
+        }
+        verifier.verifyTextInLog("Failed to execute goal io.brooklyn.maven:brooklyn-maven-plugin");
+        verifier.verifyTextInLog("should be running but is error");
+        // Text the exception message thrown by the entity.
+        verifier.verifyTextInLog("On second thoughts let's not start.");
     }
 
 }

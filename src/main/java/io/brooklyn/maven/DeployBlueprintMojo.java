@@ -15,12 +15,15 @@
  */
 package io.brooklyn.maven;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import javax.ws.rs.core.Response;
 
+import org.apache.brooklyn.rest.api.ActivityApi;
 import org.apache.brooklyn.rest.client.BrooklynApi;
 import org.apache.brooklyn.rest.domain.Status;
 import org.apache.brooklyn.rest.domain.TaskSummary;
@@ -112,7 +115,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             final TaskSummary task = deployBlueprint(loadedBlueprint);
             final String application = task.getEntityId();
             if (waitForRunning) {
-                waitForRunningAndThrowOtherwise(application);
+                waitForRunningAndThrowOtherwise(application, task.getId());
             }
             if (applicationIdProperty != null) {
                 getProject().getProperties().setProperty(applicationIdProperty, application);
@@ -151,19 +154,39 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
         return BrooklynApi.getEntity(r, TaskSummary.class);
     }
 
-    private void waitForRunningAndThrowOtherwise(String appId) throws MojoFailureException {
+    private void waitForRunningAndThrowOtherwise(String appId, String taskId) throws MojoFailureException {
         Status finalStatus = waitForAppStatus(appId, Status.RUNNING);
         if (!Status.RUNNING.equals(finalStatus)) {
             getLog().error("Application is not running. Is: " + finalStatus.name().toLowerCase());
-            String message = "Application " + appId + " should be running but is " + finalStatus.name().toLowerCase() + ". ";
+
+            StringBuilder message = new StringBuilder();
+            message.append("Application ").append(appId)
+                    .append(" should be running but is ").append(finalStatus.name().toLowerCase())
+                    .append(". ");
             if (stopAppOnDeployError) {
-                new StopApplicationMojo(server, appId).execute();
-                message += "It was requested to stop.";
+                try {
+                    new StopApplicationMojo(server, appId).execute();
+                    message.append("The application was requested to stop.");
+                } catch (Exception e) {
+                    message.append("It was not possible to stop the application; its resources may still be running: ")
+                            .append(e.getMessage());
+                }
             } else {
-                message += "It was not requested to stop; its resources may still be running.";
+                message.append("It was not requested to stop; its resources may still be running.");
             }
-            throw new MojoFailureException(message);
+            if (Status.ERROR.equals(finalStatus) || Status.UNKNOWN.equals(finalStatus)) {
+                String result = getTaskResult(taskId);
+                message.append("\nThe result of the task on the server was:\n")
+                        .append(result);
+            }
+            throw new MojoFailureException(message.toString());
         }
+    }
+
+    private String getTaskResult(String taskId) {
+        checkNotNull(taskId, "taskId");
+        TaskSummary summary = getApi().getActivityApi().get(taskId);
+        return summary == null || summary.getResult() == null ? "unknown" : summary.getResult().toString();
     }
 
     private String readFile(File file) throws MojoFailureException {
