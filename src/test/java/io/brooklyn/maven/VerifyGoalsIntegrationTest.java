@@ -25,6 +25,7 @@ import org.apache.brooklyn.util.net.Networking;
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,6 +47,16 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
 
     @Rule
     public TestResources resources = new TestResources();
+
+    /** Ensures the test parent pom is installed to the local repo. Otherwise all tests would fail. */
+    @Before
+    public void installTestParentPom() throws Exception {
+        File dir = resources.getBasedir("");
+        Verifier verifier = new Verifier(dir.getAbsolutePath());
+        // Don't try to build child modules
+        verifier.getCliOptions().add("--non-recursive");
+        verifier.executeGoal("install");
+    }
 
     @Test
     public void testDeployGoal() throws Exception {
@@ -107,7 +118,7 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
                 "bindPort", String.valueOf(port)));
         verifier.verifyErrorFreeLog();
         verifier.verifyTextInLog("Server running at http://127.0.0.1:" + port);
-        verifier.verifyTextInLog("Server version: 0.8.0-incubating");
+        verifier.verifyTextInLog("Server version: 0.9.0-SNAPSHOT");
         verifier.verifyTextInLog("Stopping server at http://127.0.0.1:" + port);
     }
 

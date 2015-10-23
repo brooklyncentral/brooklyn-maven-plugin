@@ -3,11 +3,16 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
-    <artifactId>test</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>io.brooklyn.maven</groupId>
+        <artifactId>test-projects</artifactId>
+        <version>0.3.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <name>Test of Brooklyn Maven Plugin</name>
+    <artifactId>test-teardown-on-app-failure</artifactId>
+
+    <name>App teardown test</name>
 
     <description>
         Use to confirm that a failed deployment is stopped before the build exits.
@@ -17,26 +22,11 @@
         <server>http://127.0.0.1:8081</server>
     </properties>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>io.brooklyn.maven</groupId>
                 <artifactId>brooklyn-maven-plugin</artifactId>
-                <version>0.3.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>Deploy blueprint</id>
@@ -54,5 +44,5 @@
             </plugin>
         </plugins>
     </build>
-</project>
 
+</project>

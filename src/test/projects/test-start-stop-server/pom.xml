@@ -19,31 +19,21 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
-    <artifactId>test</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>io.brooklyn.maven</groupId>
+        <artifactId>test-projects</artifactId>
+        <version>0.3.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <name>Brooklyn Maven plugin start and stop server goal test</name>
+    <artifactId>test-start-stop-server</artifactId>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+    <name>Start and stop server test</name>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.brooklyn</groupId>
             <artifactId>brooklyn-all</artifactId>
-            <version>0.8.0-incubating</version>
         </dependency>
     </dependencies>
 
@@ -52,7 +42,6 @@
             <plugin>
                 <groupId>io.brooklyn.maven</groupId>
                 <artifactId>brooklyn-maven-plugin</artifactId>
-                <version>0.3.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>Start and stop Brooklyn</id>
