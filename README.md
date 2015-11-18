@@ -107,6 +107,9 @@ At the end of the build you should see output like:
     [echo] Sensor value: http://127.0.0.1:8080/
 ```
 
+The plugin writes a `logback.xml` file to `target/brooklyn-maven-plugin/conf/` and puts it on the server's classpath.
+Server logs (`brooklyn.debug.log` and `brooklyn.info.log`) are written to `target/brooklyn-maven-plugin/.
+
 
 ### Caveats
 
