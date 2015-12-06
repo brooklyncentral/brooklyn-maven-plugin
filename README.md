@@ -110,10 +110,3 @@ At the end of the build you should see output like:
 The plugin writes a `logback.xml` file to `target/brooklyn-maven-plugin/conf/` and puts it on the server's classpath.
 Server logs (`brooklyn.debug.log` and `brooklyn.info.log`) are written to `target/brooklyn-maven-plugin/.
 
-
-### Caveats
-
-You may currently only query for entities by their type. If two or more
-entities match the query goal's regular expression the property will be set to
-`result1,result2,...`.
-
