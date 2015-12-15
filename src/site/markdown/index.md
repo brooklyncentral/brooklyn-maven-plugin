@@ -1,7 +1,7 @@
 Brooklyn Maven Plugin
 =====================
 
-A Maven plugin to help test your [Apache Brooklyn](https://brooklyn.incubator.apache.org/) blueprints.
+A Maven plugin to help test your [Apache Brooklyn](https://brooklyn.apache.org/) blueprints.
 
 ### Goals
 
@@ -34,3 +34,4 @@ Instruct a Brooklyn server to stop the application with the given ID.
 Instruct a Brooklyn server to shut down
 </dd>
 </dl>
+

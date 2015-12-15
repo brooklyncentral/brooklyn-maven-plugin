@@ -2,7 +2,7 @@ Brooklyn Maven Plugin
 =====================
 
 A Maven plugin to help test [Apache
-Brooklyn](https://brooklyn.incubator.apache.org/) blueprints. For full
+Brooklyn](https://brooklyn.apache.org/) blueprints. For full
 documentation see [the plugin website]
 (http://brooklyncentral.github.io/brooklyn-maven-plugin/index.html).
 
@@ -61,7 +61,7 @@ Display help information on brooklyn-maven-plugin.
 The [example-pom](src/test/projects/example-app/pom.xml) project:
 
 * Deploys a blueprint from a file that runs a
-  [TomcatServer](https://brooklyn.incubator.apache.org/learnmore/catalog/catalog-item.html#!entities/org.apache.brooklyn.entity.webapp.tomcat.TomcatServer)
+  [TomcatServer](https://brooklyn.apache.org/learnmore/catalog/catalog-item.html#!entities/org.apache.brooklyn.entity.webapp.tomcat.TomcatServer)
   and an EmptySoftwareProcess.
 * Queries Brooklyn for the main URL of the Tomcat application (the
   `webapp.url` sensor).
@@ -73,17 +73,18 @@ The important bits of the pom are:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
     <executions>
         <execution>
-            <id>Deploy blueprint</id>
+            <id>Run Brooklyn</id>
             <goals>
+                <goal>start-sever</goal>
                 <goal>deploy</goal>
                 <goal>sensor</goal>
                 <goal>stop</goal>
+                <goal>stop-server</goal>
             </goals>
             <configuration>
-                <server>${server}</server>
                 <blueprint>${project.basedir}/blueprint.yaml</blueprint>
                 <sensor>webapp.url</sensor>
                 <typeRegex>.*Tomcat.*</typeRegex>
