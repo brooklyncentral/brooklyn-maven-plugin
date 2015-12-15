@@ -20,7 +20,6 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -52,7 +51,6 @@ import org.apache.maven.shared.utils.cli.DefaultConsumer;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
@@ -127,6 +125,20 @@ public class StartBrooklynMojo extends AbstractMojo {
     @Parameter(
             defaultValue = Artifact.SCOPE_TEST)
     private String serverClasspathScope;
+
+    /**
+     * Whether or not the project's output directory (project.build.outputDirectory) should
+     * be included on the server's classpath.
+     */
+    @Parameter(defaultValue = "true")
+    private Boolean outputDirOnClasspath;
+
+    /**
+     * Whether or not the project's test output directory (project.build.testOutputDirectory)
+     * should be included on the server's classpath.
+     */
+    @Parameter(defaultValue = "false")
+    private Boolean testOutputDirOnClasspath;
 
     /**
      * The property to set to the newly-started server's URL.
@@ -235,26 +247,32 @@ public class StartBrooklynMojo extends AbstractMojo {
      * then all artifacts in the test scope.
      */
     private String buildClasspath() {
-        String separator = System.getProperty("path.separator");
+        final String separator = System.getProperty("path.separator");
+
+        // Head of the classpath is the directory containing logback.xml
+        final Path conf = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME, "conf").toAbsolutePath();
+        final StringBuilder classpath = new StringBuilder(conf.toString());
+
+        // Only include project directories if configured.
+        if (Boolean.TRUE.equals(testOutputDirOnClasspath)) {
+            String testOut = project.getBuild().getTestOutputDirectory();
+            classpath.append(separator).append(testOut);
+        }
+        if (Boolean.TRUE.equals(outputDirOnClasspath)) {
+            String buildOut = project.getBuild().getOutputDirectory();
+            classpath.append(separator).append(buildOut);
+        }
+
+        // Finally, put the project's dependencies at the end.
+        // TODO: docs on setArtifactFilter say it MUST NOT BE USED.
         project.setArtifactFilter(new ScopeArtifactFilter(serverClasspathScope));
         Set<Artifact> artifacts = project.getArtifacts();
         final String repoBaseDir = localRepository.getBasedir();
-
-        Set<String> urls = new HashSet<>();
         for (Artifact artifact : artifacts) {
             Path path = Paths.get(repoBaseDir, localRepository.pathOf(artifact));
-            urls.add(path.toAbsolutePath().toString());
+            classpath.append(separator).append(path.toAbsolutePath().toString());
         }
-
-        // contains logback
-        Path conf = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME, "conf").toAbsolutePath();
-        String testOut = project.getBuild().getTestOutputDirectory();
-        String buildOut = project.getBuild().getOutputDirectory();
-        StringBuilder cp = new StringBuilder(conf.toString()).append(separator)
-                .append(testOut).append(separator)
-                .append(buildOut).append(separator);
-        Joiner.on(separator).appendTo(cp, urls);
-        return cp.toString();
+        return classpath.toString();
     }
 
     /**
