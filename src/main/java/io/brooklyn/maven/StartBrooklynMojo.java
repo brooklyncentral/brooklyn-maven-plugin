@@ -108,9 +108,25 @@ public class StartBrooklynMojo extends AbstractMojo {
             property = SERVER_PORT_PROPERTY)
     private String bindPort;
 
-    @Parameter(
-            required = false)
+    /**
+     * Additional arguments for the server, for example:
+     * <pre>
+     *   &lt;argument&gt;--catalogInitial&lt;/argument&gt;
+     *   &lt;argument&gt;/path/to/custom-catalog.bom&lt;/argument&gt;
+     * </pre>
+     */
+    @Parameter
     private List<String> arguments;
+
+    /**
+     * The Maven scope to include on the server's classpath. Defaults to test, so includes
+     * all compile and test dependencies of the project. Setting a value that is not a
+     * standard scope will mean there are no additions to the classpath and Brooklyn's
+     * main class will not be found.
+     */
+    @Parameter(
+            defaultValue = Artifact.SCOPE_TEST)
+    private String serverClasspathScope;
 
     /**
      * The property to set to the newly-started server's URL.
@@ -220,7 +236,7 @@ public class StartBrooklynMojo extends AbstractMojo {
      */
     private String buildClasspath() {
         String separator = System.getProperty("path.separator");
-        project.setArtifactFilter(new ScopeArtifactFilter(Artifact.SCOPE_TEST));
+        project.setArtifactFilter(new ScopeArtifactFilter(serverClasspathScope));
         Set<Artifact> artifacts = project.getArtifacts();
         final String repoBaseDir = localRepository.getBasedir();
 
