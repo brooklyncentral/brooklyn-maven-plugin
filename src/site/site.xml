@@ -29,7 +29,7 @@
         <menu ref="reports"/>
 
         <menu name="External Links">
-            <item name="Apache Brooklyn" href="https://brooklyn.incubator.apache.org/"/>
+            <item name="Apache Brooklyn" href="https://brooklyn.apache.org/"/>
         </menu>
     </body>
 </project>
