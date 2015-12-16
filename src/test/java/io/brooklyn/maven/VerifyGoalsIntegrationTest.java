@@ -26,6 +26,7 @@ import org.apache.maven.it.VerificationException;
 import org.apache.maven.it.Verifier;
 import org.apache.maven.plugin.testing.resources.TestResources;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -152,6 +153,24 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
         verifier.verifyTextInLog("should be running but is error");
         // Text the exception message thrown by the entity.
         verifier.verifyTextInLog("On second thoughts let's not start.");
+    }
+
+    @Ignore("Feature unimplemented")
+    @Test
+    public void testPostIntegrationTestPhaseRunWhenDeployGoalFailsInIntegrationTestPhase() throws Exception {
+        int port = Networking.nextAvailablePort(59000);
+        File dir = resources.getBasedir("test-post-integration-test-phase-is-run");
+        Verifier verifier = new Verifier(dir.getAbsolutePath());
+        verifier.setMavenDebug(true);
+        try {
+            verifier.executeGoal("post-integration-test", ImmutableMap.of(
+                    "bindPort", String.valueOf(port)));
+        } catch (VerificationException e) {
+            // Expected.
+        }
+        // i.e. the project has a deploy goal that fails in the integration-test phase but the
+        // post-integration-test is still run and the server is shut down.
+        verifier.verifyTextInLog("Stopping server at http://127.0.0.1:" + port);
     }
 
 }

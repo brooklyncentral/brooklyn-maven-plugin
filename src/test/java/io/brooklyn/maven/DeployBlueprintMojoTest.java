@@ -286,7 +286,6 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
             assertTrue("Expected exception message to contain result and detailed status of deploy task. Is: " + e.getMessage(),
                     e.getMessage().contains(expectedResult));
         }
-
     }
 
 }
