@@ -160,6 +160,18 @@ public class StartBrooklynMojo extends AbstractMojo {
     private TimeUnit startTimeoutUnit;
 
     /**
+     * The user to connect to the Brooklyn server as.
+     */
+    @Parameter(property = "brooklyn.user")
+    protected String username;
+
+    /**
+     * The password for the user at the Brooklyn server.
+     */
+    @Parameter(property = "brooklyn.password")
+    protected String password;
+
+    /**
      * Constructor for use by Maven/Guice.
      */
     StartBrooklynMojo() {
@@ -167,7 +179,6 @@ public class StartBrooklynMojo extends AbstractMojo {
         this.startTimeout = 1;
         this.startTimeoutUnit = TimeUnit.MINUTES;
     }
-
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -197,7 +208,7 @@ public class StartBrooklynMojo extends AbstractMojo {
         if (waitForServerUp) {
             waitForServerStart(serverUrl);
             getLog().info("Server running at " + serverUrl);
-            BrooklynApi api = new BrooklynApi(serverUrl);
+            BrooklynApi api = getApi(serverUrl);
             getLog().info("Server version: " + api.getServerApi().getVersion().getVersion());
         } else {
             getLog().info("Server starting at " + serverUrl);
@@ -209,6 +220,7 @@ public class StartBrooklynMojo extends AbstractMojo {
         cl.addSystemEnvironment();
         // todo: inject other environment variables
         cl.setWorkingDirectory(createOutputDirectory());
+        // todo: use same java version as maven?
         cl.setExecutable("java");
         cl.createArg().setValue("-classpath");
         cl.createArg().setValue(buildClasspath());
@@ -299,11 +311,19 @@ public class StartBrooklynMojo extends AbstractMojo {
         return project.getProperties().getProperty(SERVER_PORT_PROPERTY);
     }
 
+    protected BrooklynApi getApi(String server) {
+        if (username != null && password != null) {
+            return new BrooklynApi(server, username, password);
+        } else {
+            return new BrooklynApi(server);
+        }
+    }
+
     /**
      * Waits for the given endpoint to respond true to {@link ServerApi#isUp}.
      */
     private void waitForServerStart(String url) {
-        final ServerApi api = new BrooklynApi(url).getServerApi();
+        final ServerApi api = getApi(url).getServerApi();
         getLog().info("Waiting for server at " + url + " to be ready");
         Duration timeout = Duration.of(startTimeout, startTimeoutUnit);
         boolean isUp = Repeater.create("Waiting for server at " + url + " to be ready")
