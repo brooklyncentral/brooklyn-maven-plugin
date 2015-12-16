@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,6 +41,9 @@ import com.google.common.io.Resources;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import com.sun.jersey.core.util.Base64;
+
+import io.brooklyn.maven.AbstractBrooklynMojoTest;
+import io.brooklyn.maven.BrooklynMavenProjectStub;
 
 public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
 

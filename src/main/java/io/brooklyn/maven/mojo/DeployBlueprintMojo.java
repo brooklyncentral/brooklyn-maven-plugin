@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -23,7 +23,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import javax.ws.rs.core.Response;
 
-import org.apache.brooklyn.rest.api.ActivityApi;
 import org.apache.brooklyn.rest.client.BrooklynApi;
 import org.apache.brooklyn.rest.domain.Status;
 import org.apache.brooklyn.rest.domain.TaskSummary;

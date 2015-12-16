@@ -31,6 +31,8 @@ import org.junit.Before;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 
+import io.brooklyn.maven.mojo.AbstractInvokeBrooklynMojo;
+
 public abstract class AbstractBrooklynMojoTest {
 
     /**
@@ -41,7 +43,7 @@ public abstract class AbstractBrooklynMojoTest {
 
     protected static final String APP_ID = "fedcba";
 
-    MockWebServer server;
+    protected MockWebServer server;
 
     @Before
     public void newMockWebServer() {
@@ -58,7 +60,7 @@ public abstract class AbstractBrooklynMojoTest {
      * The timeout can be injected by setting {@link #TIMEOUT_PROPERTY} as a system
      * property.
      *
-     * @see io.brooklyn.maven.AbstractInvokeBrooklynMojo#setPollPeriod(int, TimeUnit)
+     * @see AbstractInvokeBrooklynMojo#setPollPeriod(int, TimeUnit)
      */
     protected void executeMojoWithTimeout(AbstractMojo mojo) throws Exception {
         String configuredTimeout = System.getProperty(TIMEOUT_PROPERTY);
@@ -72,7 +74,7 @@ public abstract class AbstractBrooklynMojoTest {
 
     /**
      * Executes the given mojo and fails if it does not succeed within the given period.
-     * @see io.brooklyn.maven.AbstractInvokeBrooklynMojo#setPollPeriod(int, TimeUnit)
+     * @see AbstractInvokeBrooklynMojo#setPollPeriod(int, TimeUnit)
      */
     protected void executeMojoWithTimeout(final AbstractMojo mojo, int timeout, TimeUnit unit) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
