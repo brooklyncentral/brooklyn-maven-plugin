@@ -84,7 +84,7 @@ public class StopBrooklynMojo extends AbstractInvokeBrooklynMojo {
                 ", force=" + forceShutdownOnError);
 
         getApi().getServerApi().shutdown(stopApplications, forceShutdownOnError, shutdownTimeout, shutdownTimeout, shutdownTimeout, null);
-        Optional<CommandLineCallable> callable = Context.getForkedCallable(getProject(), server.toString());
+        Optional<CommandLineCallable> callable = Context.unsetForkedCallable(getProject(), server.toString());
 
         if (callable.isPresent()) {
             try {

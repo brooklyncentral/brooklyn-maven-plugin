@@ -32,6 +32,14 @@ public class Context {
         project.setContextValue(getCallableContextKey(url), callable);
     }
 
+    public static Optional<CommandLineCallable> unsetForkedCallable(@Nullable MavenProject project, String url) {
+        Optional<CommandLineCallable> callable = getForkedCallable(project, url);
+        if (project != null && callable.isPresent()) {
+            project.setContextValue(getCallableContextKey(url), null);
+        }
+        return callable;
+    }
+
     private static String getCallableContextKey(String url) {
         return BROOKLYN_PROCESS_CONTEXT + "-" + url;
     }
