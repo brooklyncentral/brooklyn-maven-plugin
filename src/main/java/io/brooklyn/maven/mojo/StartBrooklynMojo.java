@@ -17,11 +17,10 @@ package io.brooklyn.maven.mojo;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +31,6 @@ import org.apache.brooklyn.util.text.Strings;
 import org.apache.brooklyn.util.time.Duration;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
@@ -44,16 +42,12 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
-import org.apache.maven.shared.utils.cli.CommandLineException;
-import org.apache.maven.shared.utils.cli.CommandLineUtils;
-import org.apache.maven.shared.utils.cli.Commandline;
-import org.apache.maven.shared.utils.cli.DefaultConsumer;
-import org.apache.maven.shared.utils.cli.StreamConsumer;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
+import com.google.common.collect.ImmutableList;
 
+import io.brooklyn.maven.fork.BasicBrooklynForker;
+import io.brooklyn.maven.fork.ForkOptions;
+import io.brooklyn.maven.fork.ProjectDependencySupplier;
 import io.brooklyn.maven.util.Context;
 
 /**
@@ -130,14 +124,16 @@ public class StartBrooklynMojo extends AbstractMojo {
      * Whether or not the project's output directory (project.build.outputDirectory) should
      * be included on the server's classpath.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(
+            defaultValue = "true")
     private Boolean outputDirOnClasspath;
 
     /**
      * Whether or not the project's test output directory (project.build.testOutputDirectory)
      * should be included on the server's classpath.
      */
-    @Parameter(defaultValue = "false")
+    @Parameter(
+            defaultValue = "false")
     private Boolean testOutputDirOnClasspath;
 
     /**
@@ -185,22 +181,17 @@ public class StartBrooklynMojo extends AbstractMojo {
         String port = !Strings.isEmpty(bindPort) ? bindPort : reserveWebServerPort();
         getLog().info("Chosen port " + port + " for server");
 
-        Commandline cl = buildCommandLine(port);
+        Path workDir = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME).toAbsolutePath();
+        ForkOptions options = ForkOptions.builder()
+                .workDir(workDir)
+                .bindAddress(bindAddress)
+                .bindPort(port)
+                .mainClass(mainClass)
+                .additionalArguments(arguments != null ? arguments : Collections.<String>emptyList())
+                .classpath(buildClasspath())
+                .build();
 
-        // DefaultConsumer simply calls System.out.println.
-        StreamConsumer sysout = new DefaultConsumer();
-        StreamConsumer syserr = sysout;
-        // todo would like to inject but surprising to user to have to give the argument to the start goal.
-        final int shutdownTimeout = 60;
-        CommandLineCallable callable;
-        getLog().debug("Executing: " + cl);
-        try {
-            // First null: no stdin. Second: no runnable after termination.
-            callable = CommandLineUtils.executeCommandLineAsCallable(cl, null, sysout, syserr, shutdownTimeout, null);
-        } catch (CommandLineException e) {
-            throw new MojoExecutionException("Error forking server", e);
-        }
-
+        CommandLineCallable callable = new BasicBrooklynForker(options).execute();
         final String serverUrl = "http://" + bindAddress + ":" + port;
         Context.setForkedCallable(project, serverUrl, callable);
         project.getProperties().setProperty(serverUrlProperty, serverUrl);
@@ -213,78 +204,6 @@ public class StartBrooklynMojo extends AbstractMojo {
         } else {
             getLog().info("Server starting at " + serverUrl);
         }
-    }
-
-    private Commandline buildCommandLine(String port) throws MojoExecutionException {
-        Commandline cl = new Commandline();
-        cl.addSystemEnvironment();
-        // todo: inject other environment variables
-        cl.setWorkingDirectory(createOutputDirectory());
-        // todo: use same java version as maven?
-        cl.setExecutable("java");
-        cl.createArg().setValue("-classpath");
-        cl.createArg().setValue(buildClasspath());
-        cl.createArg().setValue(mainClass);
-        cl.createArg().setValue("launch");
-        cl.createArg().setValue("--bindAddress");
-        cl.createArg().setValue(bindAddress);
-        cl.createArg().setValue("--port");
-        cl.createArg().setValue(port);
-        if (arguments != null) {
-            for (String argument : arguments) {
-                cl.createArg().setValue(argument);
-            }
-        }
-        return cl;
-    }
-
-    /**
-     * Creates and returns the path to a directory in the project's build directory.
-     */
-    private String createOutputDirectory() throws MojoExecutionException {
-        Path workingDir = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME).toAbsolutePath();
-        Path confDir = workingDir.resolve("conf");
-        confDir.toFile().mkdirs();
-        try {
-            String logback = Resources.asCharSource(getClass().getResource("/logback.xml"), Charsets.UTF_8).read();
-            Files.write(logback, confDir.resolve("logback.xml").toFile(), Charsets.UTF_8);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error writing logback configuration", e);
-        }
-        return workingDir.toString();
-    }
-
-    /**
-     * @return A classpath of the test output directory, then the build output directory,
-     * then all artifacts in the test scope.
-     */
-    private String buildClasspath() {
-        final String separator = System.getProperty("path.separator");
-
-        // Head of the classpath is the directory containing logback.xml
-        final Path conf = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME, "conf").toAbsolutePath();
-        final StringBuilder classpath = new StringBuilder(conf.toString());
-
-        // Only include project directories if configured.
-        if (Boolean.TRUE.equals(testOutputDirOnClasspath)) {
-            String testOut = project.getBuild().getTestOutputDirectory();
-            classpath.append(separator).append(testOut);
-        }
-        if (Boolean.TRUE.equals(outputDirOnClasspath)) {
-            String buildOut = project.getBuild().getOutputDirectory();
-            classpath.append(separator).append(buildOut);
-        }
-
-        // Finally, put the project's dependencies at the end.
-        // TODO: docs on setArtifactFilter say it MUST NOT BE USED.
-        project.setArtifactFilter(new ScopeArtifactFilter(serverClasspathScope));
-        Set<Artifact> artifacts = project.getArtifacts();
-        final String repoBaseDir = localRepository.getBasedir();
-        for (Artifact artifact : artifacts) {
-            Path path = Paths.get(repoBaseDir, localRepository.pathOf(artifact));
-            classpath.append(separator).append(path.toAbsolutePath().toString());
-        }
-        return classpath.toString();
     }
 
     /**
@@ -309,6 +228,23 @@ public class StartBrooklynMojo extends AbstractMojo {
                 )
         );
         return project.getProperties().getProperty(SERVER_PORT_PROPERTY);
+    }
+
+    private List<Path> buildClasspath() {
+        ImmutableList.Builder<Path> classpath = ImmutableList.builder();
+        // Only include project directories if configured.
+        if (Boolean.TRUE.equals(testOutputDirOnClasspath)) {
+            String testOut = project.getBuild().getTestOutputDirectory();
+            classpath.add(Paths.get(testOut));
+        }
+        if (Boolean.TRUE.equals(outputDirOnClasspath)) {
+            String outDir = project.getBuild().getOutputDirectory();
+            classpath.add(Paths.get(outDir));
+        }
+        ProjectDependencySupplier dependenciesSupplier = new ProjectDependencySupplier(
+                project, localRepository, serverClasspathScope);
+        classpath.addAll(dependenciesSupplier.get());
+        return classpath.build();
     }
 
     protected BrooklynApi getApi(String server) {
