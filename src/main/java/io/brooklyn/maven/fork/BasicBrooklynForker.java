@@ -2,7 +2,6 @@ package io.brooklyn.maven.fork;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.shared.utils.cli.CommandLineCallable;
@@ -11,21 +10,20 @@ import org.apache.maven.shared.utils.cli.CommandLineUtils;
 import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.DefaultConsumer;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
+import org.codehaus.plexus.component.annotations.Component;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 
-public class BasicBrooklynForker {
+@Component(
+        role = BrooklynForker.class,
+        hint = "default")
+public class BasicBrooklynForker implements BrooklynForker<Integer> {
 
-    private final ForkOptions options;
-
-    public BasicBrooklynForker(ForkOptions options) {
-        this.options = options;
-    }
-
-    public CommandLineCallable execute() throws MojoExecutionException {
-        Commandline cl = buildCommandLine(options.bindPort());
+    @Override
+    public CommandLineCallable execute(ForkOptions options) throws MojoExecutionException {
+        Commandline cl = buildCommandLine(options);
         // DefaultConsumer simply calls System.out.println.
         StreamConsumer sysout = new DefaultConsumer();
         StreamConsumer syserr = sysout;
@@ -40,21 +38,21 @@ public class BasicBrooklynForker {
         }
     }
 
-    private Commandline buildCommandLine(String port) throws MojoExecutionException {
+    private Commandline buildCommandLine(ForkOptions options) throws MojoExecutionException {
         Commandline cl = new Commandline();
         cl.addSystemEnvironment();
         // todo: inject other environment variables
-        cl.setWorkingDirectory(createOutputDirectory());
+        cl.setWorkingDirectory(createOutputDirectory(options.workDir()));
         // todo: use same java version as maven?
         cl.setExecutable("java");
         cl.createArg().setValue("-classpath");
-        cl.createArg().setValue(buildClasspath());
+        cl.createArg().setValue(buildClasspath(options));
         cl.createArg().setValue(options.mainClass());
         cl.createArg().setValue("launch");
         cl.createArg().setValue("--bindAddress");
         cl.createArg().setValue(options.bindAddress());
         cl.createArg().setValue("--port");
-        cl.createArg().setValue(port);
+        cl.createArg().setValue(options.bindPort());
         for (String argument : options.additionalArguments()) {
             cl.createArg().setValue(argument);
         }
@@ -64,8 +62,7 @@ public class BasicBrooklynForker {
     /**
      * Creates and returns the path to a directory in the project's build directory.
      */
-    private String createOutputDirectory() throws MojoExecutionException {
-        Path workingDir = options.workDir();
+    private String createOutputDirectory(Path workingDir) throws MojoExecutionException {
         Path confDir = workingDir.resolve("conf");
         confDir.toFile().mkdirs();
         try {
@@ -77,7 +74,7 @@ public class BasicBrooklynForker {
         return workingDir.toString();
     }
 
-    private String buildClasspath() {
+    private String buildClasspath(ForkOptions options) {
         final String separator = System.getProperty("path.separator");
         // Head of the classpath is the directory containing logback.xml
         final Path conf = options.workDir().resolve("conf").toAbsolutePath();

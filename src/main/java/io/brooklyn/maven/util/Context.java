@@ -2,10 +2,10 @@ package io.brooklyn.maven.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.utils.cli.CommandLineCallable;
 
 import com.google.common.base.Optional;
 
@@ -15,25 +15,25 @@ public class Context {
 
     private Context() {}
 
-    public static Optional<CommandLineCallable> getForkedCallable(@Nullable MavenProject project, String url) {
+    public static Optional<Callable> getForkedCallable(@Nullable MavenProject project, String url) {
         if (project != null) {
             Object context = project.getContextValue(getCallableContextKey(url));
-            if (context != null && context instanceof CommandLineCallable) {
-                return Optional.of(CommandLineCallable.class.cast(context));
+            if (context != null && context instanceof Callable) {
+                return Optional.of(Callable.class.cast(context));
             }
         }
         return Optional.absent();
     }
 
-    public static void setForkedCallable(MavenProject project, String url, CommandLineCallable callable) {
+    public static void setForkedCallable(MavenProject project, String url, Callable<?> callable) {
         checkNotNull(project, "project");
         checkNotNull(url, "url");
         checkNotNull(callable, "callable");
         project.setContextValue(getCallableContextKey(url), callable);
     }
 
-    public static Optional<CommandLineCallable> unsetForkedCallable(@Nullable MavenProject project, String url) {
-        Optional<CommandLineCallable> callable = getForkedCallable(project, url);
+    public static Optional<Callable> unsetForkedCallable(@Nullable MavenProject project, String url) {
+        Optional<Callable> callable = getForkedCallable(project, url);
         if (project != null && callable.isPresent()) {
             project.setContextValue(getCallableContextKey(url), null);
         }

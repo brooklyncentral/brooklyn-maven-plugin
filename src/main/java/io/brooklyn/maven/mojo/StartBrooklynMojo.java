@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.brooklyn.rest.api.ServerApi;
 import org.apache.brooklyn.rest.client.BrooklynApi;
@@ -32,7 +31,6 @@ import org.apache.brooklyn.util.time.Duration;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -40,12 +38,10 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.utils.cli.CommandLineCallable;
 
 import com.google.common.collect.ImmutableList;
 
-import io.brooklyn.maven.fork.BasicBrooklynForker;
+import io.brooklyn.maven.fork.BrooklynForker;
 import io.brooklyn.maven.fork.ForkOptions;
 import io.brooklyn.maven.fork.ProjectDependencySupplier;
 import io.brooklyn.maven.util.Context;
@@ -67,6 +63,9 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
 
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
+
+    @Component
+    private BrooklynForker<?> forker;
 
     @Component
     private BuildPluginManager pluginManager;
@@ -178,7 +177,7 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
                 .classpath(buildClasspath())
                 .build();
 
-        CommandLineCallable callable = new BasicBrooklynForker(options).execute();
+        Callable<?> callable = forker.execute(options);
         final String serverUrl = "http://" + bindAddress + ":" + port;
         Context.setForkedCallable(getProject(), serverUrl, callable);
         getProject().getProperties().setProperty(serverUrlProperty, serverUrl);

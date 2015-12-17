@@ -16,11 +16,11 @@
 package io.brooklyn.maven.mojo;
 
 import java.net.URL;
+import java.util.concurrent.Callable;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.utils.cli.CommandLineCallable;
 
 import com.google.common.base.Optional;
 
@@ -84,7 +84,7 @@ public class StopBrooklynMojo extends AbstractInvokeBrooklynMojo {
                 ", force=" + forceShutdownOnError);
 
         getApi().getServerApi().shutdown(stopApplications, forceShutdownOnError, shutdownTimeout, shutdownTimeout, shutdownTimeout, null);
-        Optional<CommandLineCallable> callable = Context.unsetForkedCallable(getProject(), server.toString());
+        Optional<Callable> callable = Context.unsetForkedCallable(getProject(), server.toString());
 
         if (callable.isPresent()) {
             try {
