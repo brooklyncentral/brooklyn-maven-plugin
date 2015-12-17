@@ -57,16 +57,13 @@ import io.brooklyn.maven.util.Context;
         defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST,
         configurator = "include-project-dependencies",
         requiresDependencyResolution = ResolutionScope.TEST)
-public class StartBrooklynMojo extends AbstractMojo {
+public class StartBrooklynMojo extends AbstractBrooklynMojo {
 
     private static final String SERVER_PORT_PROPERTY = "brooklyn.port";
     private static final String PLUGIN_NAME = "brooklyn-maven-plugin";
 
     @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     private ArtifactRepository localRepository;
-
-    @Parameter(defaultValue = "${project}", readonly = true)
-    private MavenProject project;
 
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
@@ -147,14 +144,6 @@ public class StartBrooklynMojo extends AbstractMojo {
             defaultValue = "true")
     private boolean waitForServerUp;
 
-    @Parameter(
-            defaultValue = "1")
-    private Integer startTimeout;
-
-    @Parameter(
-            defaultValue = "MINUTES")
-    private TimeUnit startTimeoutUnit;
-
     /**
      * The user to connect to the Brooklyn server as.
      */
@@ -171,9 +160,7 @@ public class StartBrooklynMojo extends AbstractMojo {
      * Constructor for use by Maven/Guice.
      */
     StartBrooklynMojo() {
-        // Values are overwritten by Guice when instances are created in a build.
-        this.startTimeout = 1;
-        this.startTimeoutUnit = TimeUnit.MINUTES;
+        super();
     }
 
     @Override
@@ -181,7 +168,7 @@ public class StartBrooklynMojo extends AbstractMojo {
         String port = !Strings.isEmpty(bindPort) ? bindPort : reserveWebServerPort();
         getLog().info("Chosen port " + port + " for server");
 
-        Path workDir = Paths.get(project.getBuild().getDirectory(), PLUGIN_NAME).toAbsolutePath();
+        Path workDir = Paths.get(getProject().getBuild().getDirectory(), PLUGIN_NAME).toAbsolutePath();
         ForkOptions options = ForkOptions.builder()
                 .workDir(workDir)
                 .bindAddress(bindAddress)
@@ -193,8 +180,8 @@ public class StartBrooklynMojo extends AbstractMojo {
 
         CommandLineCallable callable = new BasicBrooklynForker(options).execute();
         final String serverUrl = "http://" + bindAddress + ":" + port;
-        Context.setForkedCallable(project, serverUrl, callable);
-        project.getProperties().setProperty(serverUrlProperty, serverUrl);
+        Context.setForkedCallable(getProject(), serverUrl, callable);
+        getProject().getProperties().setProperty(serverUrlProperty, serverUrl);
 
         if (waitForServerUp) {
             waitForServerStart(serverUrl);
@@ -222,27 +209,27 @@ public class StartBrooklynMojo extends AbstractMojo {
                         element(name("portNames"), element(name("portName"), SERVER_PORT_PROPERTY))
                 ),
                 executionEnvironment(
-                        project,
+                        getProject(),
                         session,
                         pluginManager
                 )
         );
-        return project.getProperties().getProperty(SERVER_PORT_PROPERTY);
+        return getProject().getProperties().getProperty(SERVER_PORT_PROPERTY);
     }
 
     private List<Path> buildClasspath() {
         ImmutableList.Builder<Path> classpath = ImmutableList.builder();
         // Only include project directories if configured.
         if (Boolean.TRUE.equals(testOutputDirOnClasspath)) {
-            String testOut = project.getBuild().getTestOutputDirectory();
+            String testOut = getProject().getBuild().getTestOutputDirectory();
             classpath.add(Paths.get(testOut));
         }
         if (Boolean.TRUE.equals(outputDirOnClasspath)) {
-            String outDir = project.getBuild().getOutputDirectory();
+            String outDir = getProject().getBuild().getOutputDirectory();
             classpath.add(Paths.get(outDir));
         }
         ProjectDependencySupplier dependenciesSupplier = new ProjectDependencySupplier(
-                project, localRepository, serverClasspathScope);
+                getProject(), localRepository, serverClasspathScope);
         classpath.addAll(dependenciesSupplier.get());
         return classpath.build();
     }
@@ -261,10 +248,9 @@ public class StartBrooklynMojo extends AbstractMojo {
     private void waitForServerStart(String url) {
         final ServerApi api = getApi(url).getServerApi();
         getLog().info("Waiting for server at " + url + " to be ready");
-        Duration timeout = Duration.of(startTimeout, startTimeoutUnit);
         boolean isUp = Repeater.create("Waiting for server at " + url + " to be ready")
                 .every(Duration.ONE_SECOND)
-                .limitTimeTo(timeout)
+                .limitTimeTo(getTimeout())
                 .until(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
@@ -273,7 +259,7 @@ public class StartBrooklynMojo extends AbstractMojo {
                 })
                 .run();
         if (!isUp) {
-            getLog().warn("Server at " + url + " does not appear to be running after " + timeout);
+            getLog().warn("Server at " + url + " does not appear to be running after " + getTimeout());
         }
     }
 
