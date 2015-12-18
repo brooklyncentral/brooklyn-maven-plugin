@@ -39,7 +39,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.annotations.VisibleForTesting;
 
 import io.brooklyn.maven.fork.BrooklynForker;
 import io.brooklyn.maven.fork.ForkOptions;
@@ -66,6 +66,9 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
 
     @Component
     private BrooklynForker<?> forker;
+
+    @Component
+    private ProjectDependencySupplier dependencySupplier;
 
     @Component
     private BuildPluginManager pluginManager;
@@ -107,10 +110,11 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
     private List<String> arguments;
 
     /**
-     * The Maven scope to include on the server's classpath. Defaults to test, so includes
-     * all compile and test dependencies of the project. Setting a value that is not a
-     * standard scope will mean there are no additions to the classpath and Brooklyn's
-     * main class will not be found.
+     * The Maven scope to include on the server's classpath. Defaults to test. Setting
+     * a value that is not a standard scope will mean there are no additions to the
+     * classpath and Brooklyn's main class will not be found. Consider setting {@link
+     * #testOutputDirOnClasspath} to false if the value for this parameter
+     * is changed.
      */
     @Parameter(
             defaultValue = Artifact.SCOPE_TEST)
@@ -126,10 +130,11 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
 
     /**
      * Whether or not the project's test output directory (project.build.testOutputDirectory)
-     * should be included on the server's classpath.
+     * should be included on the server's classpath. Configure {@link #serverClasspathScope}
+     * appropriately too.
      */
     @Parameter(
-            defaultValue = "false")
+            defaultValue = "true")
     private Boolean testOutputDirOnClasspath;
 
     /**
@@ -139,6 +144,10 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
             defaultValue = "brooklyn.server")
     private String serverUrlProperty;
 
+    /**
+     * Indicates whether the goal should wait for the started server to report itself as running
+     * (ascertained by polling its REST API) before returning.
+     */
     @Parameter(
             defaultValue = "true")
     private boolean waitForServerUp;
@@ -159,7 +168,21 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
      * Constructor for use by Maven/Guice.
      */
     StartBrooklynMojo() {
+        this(null, null, null, null, null, null, null);
+    }
+
+    @VisibleForTesting
+    StartBrooklynMojo(
+            BrooklynForker<?> forker, ProjectDependencySupplier dependencySupplier, String bindAddress, String bindPort,
+            String mainClass, String serverClasspathScope, String serverUrlProperty) {
         super();
+        this.forker = forker;
+        this.dependencySupplier = dependencySupplier;
+        this.bindAddress = bindAddress;
+        this.bindPort = bindPort;
+        this.mainClass = mainClass;
+        this.serverClasspathScope = serverClasspathScope;
+        this.serverUrlProperty = serverUrlProperty;
     }
 
     @Override
@@ -168,19 +191,25 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
         getLog().info("Chosen port " + port + " for server");
 
         Path workDir = Paths.get(getProject().getBuild().getDirectory(), PLUGIN_NAME).toAbsolutePath();
+        // Haven't found a way to inject these properties into the class.
+        dependencySupplier.setLocalRepository(localRepository)
+                .setOutputDirOnClasspath(Boolean.TRUE.equals(outputDirOnClasspath))
+                .setTestOutputDirOnClasspath(Boolean.TRUE.equals(testOutputDirOnClasspath))
+                .setScope(serverClasspathScope);
         ForkOptions options = ForkOptions.builder()
                 .workDir(workDir)
                 .bindAddress(bindAddress)
                 .bindPort(port)
                 .mainClass(mainClass)
                 .additionalArguments(arguments != null ? arguments : Collections.<String>emptyList())
-                .classpath(buildClasspath())
+                .classpath(dependencySupplier.get())
                 .build();
-
         Callable<?> callable = forker.execute(options);
         final String serverUrl = "http://" + bindAddress + ":" + port;
         Context.setForkedCallable(getProject(), serverUrl, callable);
         getProject().getProperties().setProperty(serverUrlProperty, serverUrl);
+
+        // TODO Need to record url, username and password in context so that deploy goal can tidy up on failures.
 
         if (waitForServerUp) {
             waitForServerStart(serverUrl);
@@ -214,23 +243,6 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
                 )
         );
         return getProject().getProperties().getProperty(SERVER_PORT_PROPERTY);
-    }
-
-    private List<Path> buildClasspath() {
-        ImmutableList.Builder<Path> classpath = ImmutableList.builder();
-        // Only include project directories if configured.
-        if (Boolean.TRUE.equals(testOutputDirOnClasspath)) {
-            String testOut = getProject().getBuild().getTestOutputDirectory();
-            classpath.add(Paths.get(testOut));
-        }
-        if (Boolean.TRUE.equals(outputDirOnClasspath)) {
-            String outDir = getProject().getBuild().getOutputDirectory();
-            classpath.add(Paths.get(outDir));
-        }
-        ProjectDependencySupplier dependenciesSupplier = new ProjectDependencySupplier(
-                getProject(), localRepository, serverClasspathScope);
-        classpath.addAll(dependenciesSupplier.get());
-        return classpath.build();
     }
 
     protected BrooklynApi getApi(String server) {

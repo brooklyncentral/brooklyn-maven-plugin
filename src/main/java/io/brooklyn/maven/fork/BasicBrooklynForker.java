@@ -11,6 +11,8 @@ import org.apache.maven.shared.utils.cli.Commandline;
 import org.apache.maven.shared.utils.cli.DefaultConsumer;
 import org.apache.maven.shared.utils.cli.StreamConsumer;
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -21,6 +23,9 @@ import com.google.common.io.Resources;
         hint = "default")
 public class BasicBrooklynForker implements BrooklynForker<Integer> {
 
+    @Requirement
+    private Logger logger;
+
     @Override
     public CommandLineCallable execute(ForkOptions options) throws MojoExecutionException {
         Commandline cl = buildCommandLine(options);
@@ -29,7 +34,7 @@ public class BasicBrooklynForker implements BrooklynForker<Integer> {
         StreamConsumer syserr = sysout;
         // todo would like to inject but surprising to user to have to give the argument to the start goal.
         final int shutdownTimeout = 60;
-        // getLog().debug("Executing: " + cl);
+        logger.debug("Executing: " + cl);
         try {
             // First null: no stdin. Second: no runnable after termination.
             return CommandLineUtils.executeCommandLineAsCallable(cl, null, sysout, syserr, shutdownTimeout, null);
@@ -82,7 +87,6 @@ public class BasicBrooklynForker implements BrooklynForker<Integer> {
         for (Path path : options.classpath()) {
             classpath.append(separator).append(path);
         }
-
         return classpath.toString();
     }
 }
