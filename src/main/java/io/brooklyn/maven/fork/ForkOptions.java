@@ -2,6 +2,7 @@ package io.brooklyn.maven.fork;
 
 import java.nio.file.Path;
 import java.util.List;
+import javax.annotation.Nullable;
 
 import com.google.auto.value.AutoValue;
 
@@ -23,6 +24,8 @@ public abstract class ForkOptions {
     public abstract String mainClass();
     public abstract String bindAddress();
     public abstract String bindPort();
+    @Nullable public abstract String username();
+    @Nullable public abstract String password();
 
     @AutoValue.Builder
     public abstract static class Builder {
@@ -35,6 +38,8 @@ public abstract class ForkOptions {
         public abstract Builder mainClass(String clazz);
         public abstract Builder bindAddress(String address);
         public abstract Builder bindPort(String port);
+        public abstract Builder username(@Nullable String username);
+        public abstract Builder password(@Nullable String port);
 
         public abstract ForkOptions build();
     }

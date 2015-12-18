@@ -33,9 +33,6 @@
                         <goals>
                             <goal>start-server</goal>
                         </goals>
-                        <configuration>
-                            <testOutputDirOnClasspath>true</testOutputDirOnClasspath>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>Deploy, test and stop</id>

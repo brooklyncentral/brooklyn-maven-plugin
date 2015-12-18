@@ -19,34 +19,48 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Callables;
 
 import io.brooklyn.maven.AbstractBrooklynMojoTest;
 import io.brooklyn.maven.BrooklynMavenProjectStub;
 import io.brooklyn.maven.fork.BrooklynForker;
 import io.brooklyn.maven.fork.ForkOptions;
 import io.brooklyn.maven.fork.ProjectDependencySupplier;
-import io.brooklyn.maven.util.Context;
+import io.brooklyn.maven.fork.ShutdownOptions;
 
 public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
 
     private static final String DEPENDENCY_STRING = "/path/to/dependency";
 
-    private static class EchoingForker implements BrooklynForker<ForkOptions> {
+    private static class RecordingForker implements BrooklynForker {
+        ForkOptions options;
+
         @Override
-        public Callable<ForkOptions> execute(ForkOptions config) throws MojoExecutionException {
-            return Callables.returning(config);
+        public URL execute(ForkOptions options) throws MojoExecutionException {
+            try {
+                this.options = options;
+                return new URL("http", options.bindAddress(), options.bindPort());
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void cleanUp() {
+        }
+
+        @Override
+        public void cleanUp(ShutdownOptions options) {
         }
     }
 
@@ -62,12 +76,11 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
         final MavenProjectStub project = new BrooklynMavenProjectStub();
         final String mainUrlProperty = "mainUrlProperty";
         final ConstantDependencySupplier dependencySupplier = new ConstantDependencySupplier();
-        final EchoingForker forker = new EchoingForker();
+        final RecordingForker forker = new RecordingForker();
         final String bindPort = "bindPort";
         final String bindAddress = "bindAddress";
 
         StartBrooklynMojo mojo = new StartBrooklynMojo(
-                forker,
                 dependencySupplier,
                 bindAddress,
                 bindPort,
@@ -75,6 +88,7 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
                 "classpathScope",
                 mainUrlProperty);
         mojo.setProject(project);
+        mojo.setForker(forker);
         executeMojoWithTimeout(mojo);
 
         Object urlProperty = project.getProperties().get(mainUrlProperty);
@@ -84,15 +98,8 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
         assertTrue("Server url did not contain configured bind address", serverUrl.contains(bindAddress));
         assertTrue("Server url did not contain configured bind port", serverUrl.contains(bindPort));
 
-        // Goal should set a callable in the plugin context.
-        Optional<Callable> context = Context.getForkedCallable(project, serverUrl);
-        assertTrue("No callable set in project context for key: " + serverUrl, context.isPresent());
-
-        Object result = context.get().call();
-        assertNotNull("Callable did not return a value", result);
-        assertTrue("Expected callable result to be an instance of " + ForkOptions.class.getName(), result instanceof ForkOptions);
-
-        ForkOptions options = ForkOptions.class.cast(result);
+        ForkOptions options = forker.options;
+        assertNotNull("BrooklynForker class was not called", options);
         assertEquals("mainClass", options.mainClass());
         assertEquals(bindAddress, options.bindAddress());
         assertEquals(bindPort, options.bindPort());

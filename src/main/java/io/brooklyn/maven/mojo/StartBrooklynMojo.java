@@ -41,10 +41,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import io.brooklyn.maven.fork.BrooklynForker;
 import io.brooklyn.maven.fork.ForkOptions;
 import io.brooklyn.maven.fork.ProjectDependencySupplier;
-import io.brooklyn.maven.util.Context;
 
 /**
  * Run a Brooklyn server.
@@ -63,9 +61,6 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
 
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
-
-    @Component
-    private BrooklynForker<?> forker;
 
     @Component
     private ProjectDependencySupplier dependencySupplier;
@@ -168,15 +163,14 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
      * Constructor for use by Maven/Guice.
      */
     StartBrooklynMojo() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     @VisibleForTesting
     StartBrooklynMojo(
-            BrooklynForker<?> forker, ProjectDependencySupplier dependencySupplier, String bindAddress, String bindPort,
+            ProjectDependencySupplier dependencySupplier, String bindAddress, String bindPort,
             String mainClass, String serverClasspathScope, String serverUrlProperty) {
         super();
-        this.forker = forker;
         this.dependencySupplier = dependencySupplier;
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;
@@ -203,13 +197,11 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
                 .mainClass(mainClass)
                 .additionalArguments(arguments != null ? arguments : Collections.<String>emptyList())
                 .classpath(dependencySupplier.get())
+                .username(username)
+                .password(password)
                 .build();
-        Callable<?> callable = forker.execute(options);
-        final String serverUrl = "http://" + bindAddress + ":" + port;
-        Context.setForkedCallable(getProject(), serverUrl, callable);
+        String serverUrl = getForker().execute(options).toString();
         getProject().getProperties().setProperty(serverUrlProperty, serverUrl);
-
-        // TODO Need to record url, username and password in context so that deploy goal can tidy up on failures.
 
         if (waitForServerUp) {
             waitForServerStart(serverUrl);

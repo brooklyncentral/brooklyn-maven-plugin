@@ -69,7 +69,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
      * Configure the plugin to wait for the deployed blueprint to be {@link Status#RUNNING running}
      * or to throw a {@link MojoFailureException} if it is not running within the configured
      * {@link #timeout}.
-     * <p>
+     * <p/>
      * If a deployment fails when this property is set then any goals configured in the
      * post-integration-test phase will not run.
      */
@@ -122,10 +122,16 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
             } else {
                 getLog().info("No property to set to new application ID");
             }
-        } catch (MojoFailureException e) {
-            throw e;
         } catch (Exception e) {
-            throw new MojoFailureException("Exception deploying blueprint", e);
+            if (getForker() != null) {
+                getLog().info("Exception deploying blueprint. Cleaning up forked servers.");
+                getForker().cleanUp();
+            }
+            if (e instanceof MojoFailureException) {
+                throw e;
+            } else {
+                throw new MojoFailureException("Exception deploying blueprint", e);
+            }
         }
     }
 
