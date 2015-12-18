@@ -95,8 +95,7 @@ The important bits of the pom are:
 ```
 
 You can test this project by starting Brooklyn and running `mvn clean install`
-from the `example-app` directory. If Brooklyn starts on any port other than
-8081 then run with `-Dserver=http://host:port`.
+from the `example-app` directory.
 
 At the end of the build you should see output like:
 ```
@@ -109,5 +108,5 @@ At the end of the build you should see output like:
 ```
 
 The plugin writes a `logback.xml` file to `target/brooklyn-maven-plugin/conf/` and puts it on the server's classpath.
-Server logs (`brooklyn.debug.log` and `brooklyn.info.log`) are written to `target/brooklyn-maven-plugin/.
+Server logs (`brooklyn.debug.log` and `brooklyn.info.log`) are written to `target/brooklyn-maven-plugin/`.
 

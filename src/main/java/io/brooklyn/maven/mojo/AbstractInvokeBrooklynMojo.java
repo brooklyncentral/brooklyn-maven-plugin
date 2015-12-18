@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,20 +29,13 @@ import org.apache.brooklyn.rest.client.BrooklynApi;
 import org.apache.brooklyn.rest.domain.Status;
 import org.apache.brooklyn.util.repeat.Repeater;
 import org.apache.brooklyn.util.time.Duration;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * An abstract class for Mojos that invoke actions on an existing Brooklyn server.
  */
-public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
-
-    @Parameter(defaultValue = "${project}", readonly = true)
-    private MavenProject project;
+public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
 
     /**
      * The URL of the Brooklyn server to communicate with.
@@ -63,22 +56,6 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
      */
     @Parameter(property = "brooklyn.password")
     protected String password;
-
-    /**
-     * The duration mojos should wait for actions at Brooklyn to complete.
-     */
-    @Parameter(
-            property = "brooklyn.timeout",
-            defaultValue = "5")
-    private Integer timeout;
-
-    /**
-     * The unit associated with {@link #timeout}.
-     */
-    @Parameter(
-            property = "brooklyn.timeoutUnit",
-            defaultValue = "MINUTES")
-    private TimeUnit timeoutUnit;
 
     /**
      * The period that should be waited between successive polls of the Brooklyn server.
@@ -106,10 +83,9 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
     }
 
     public AbstractInvokeBrooklynMojo(URL server) {
+        super();
         this.server = server;
-        // Values are set here to aid tests but in truth are overwritten when Maven invokes the plugin.
-        this.timeout = 5;
-        this.timeoutUnit = TimeUnit.SECONDS;
+        // Values are set here to aid tests. They are overwritten when Maven invokes the plugin.
         this.pollPeriod = 1;
         this.pollUnit = TimeUnit.SECONDS;
     }
@@ -133,29 +109,10 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractMojo {
         return Duration.of(pollPeriod, pollUnit);
     }
 
-    protected MavenProject getProject() {
-        return project;
-    }
-
-    protected Duration getTimeout() {
-        return Duration.of(timeout, timeoutUnit);
-    }
 
     AbstractInvokeBrooklynMojo setPollPeriod(int period, TimeUnit unit) {
         this.pollPeriod = checkNotNull(period, "period");
         this.pollUnit = checkNotNull(unit, "unit");
-        return this;
-    }
-
-    @VisibleForTesting
-    AbstractInvokeBrooklynMojo setProject(MavenProject project) {
-        this.project = project;
-        return this;
-    }
-
-    AbstractInvokeBrooklynMojo setTimeout(int timeout, TimeUnit unit) {
-        this.timeout = checkNotNull(timeout, "timeout");
-        this.timeoutUnit = checkNotNull(unit, "unit");
         return this;
     }
 

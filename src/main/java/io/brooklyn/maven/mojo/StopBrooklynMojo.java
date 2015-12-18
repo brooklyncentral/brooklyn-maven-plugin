@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import java.net.URL;
 
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.utils.cli.CommandLineCallable;
 
-import com.google.common.base.Optional;
-
-import io.brooklyn.maven.util.Context;
+import io.brooklyn.maven.fork.ShutdownOptions;
 
 /**
  * Instruct a Brooklyn server to shut down.
- * <p>
+ * <p/>
  * If the server was started by the {@link StartBrooklynMojo start goal} the plugin
  * will wait for the forked process to exit.
  */
@@ -78,26 +75,14 @@ public class StopBrooklynMojo extends AbstractInvokeBrooklynMojo {
 
     @Override
     public void execute() {
-        getLog().info("Stopping server at " + server +
-                ", timeout=" + shutdownTimeout +
-                ", stopApps=" + stopApplications +
-                ", force=" + forceShutdownOnError);
-
-        getApi().getServerApi().shutdown(stopApplications, forceShutdownOnError, shutdownTimeout, shutdownTimeout, shutdownTimeout, null);
-        Optional<CommandLineCallable> callable = Context.getForkedCallable(getProject(), server.toString());
-
-        if (callable.isPresent()) {
-            try {
-                // Waits for the forked process to exit.
-                getLog().debug("Waiting for forked process to complete");
-                callable.get().call();
-                getLog().debug("Forked process complete");
-            } catch (Exception e) {
-                getLog().warn("Exception waiting for forked process to complete", e);
-            }
-        } else {
-            // Possible if the start-server goal was not used.
-            getLog().debug("Cannot wait for server to exit: no callable context.");
-        }
+        ShutdownOptions options = ShutdownOptions.builder()
+                .server(server)
+                .username(username)
+                .password(password)
+                .stopAllApplications(stopApplications)
+                .forceShutdownOnError(forceShutdownOnError)
+                .timeout(shutdownTimeout)
+                .build();
+        getForker().cleanUp(options);
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +27,9 @@ import org.apache.maven.project.MavenProject;
 import org.junit.Test;
 
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
+
+import io.brooklyn.maven.AbstractBrooklynMojoTest;
+import io.brooklyn.maven.BrooklynMavenProjectStub;
 
 public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
 

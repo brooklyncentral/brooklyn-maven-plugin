@@ -10,15 +10,14 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>test-task-result-reported</artifactId>
+    <artifactId>test-post-integration-test-phase-is-run</artifactId>
 
-    <name>Task reporting test</name>
+    <name>Test that post-integration-test phase runs when deploy fails</name>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.brooklyn</groupId>
             <artifactId>brooklyn-all</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -33,16 +32,18 @@
                         <goals>
                             <goal>start-server</goal>
                         </goals>
+                        <configuration>
+                            <bindPort>${bindPort}</bindPort>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>Deploy, test and stop</id>
-                        <!--Changes the phase of the deploy goal to make sure the post-integration-test phase is run.-->
+                        <id>Deploy goal fails</id>
                         <phase>integration-test</phase>
                         <goals>
                             <goal>deploy</goal>
                         </goals>
                         <configuration>
-                            <blueprint>${project.basedir}/failing-blueprint.yaml</blueprint>
+                            <blueprint>${project.basedir}/no-such-file.yaml</blueprint>
                         </configuration>
                     </execution>
                     <execution>
@@ -56,4 +57,3 @@
         </plugins>
     </build>
 </project>
-

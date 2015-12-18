@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import java.net.URL;
 import java.util.Map;
@@ -97,14 +97,22 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        if (waitForRunning) {
-            waitForAppStatusOrThrow(application, Status.RUNNING);
-        }
-        Map<String, Object> matches = getApi().getEntityApi().getDescendantsSensor(
-                application, application, sensor, typeRegex);
-        if (failIfNoMatches && matches.isEmpty()) {
-            throw new MojoFailureException("No entities in " + application + " matching " + typeRegex +
-                    " have a value for " + sensor);
+        Map<String, Object> matches;
+        try {
+            if (waitForRunning) {
+                waitForAppStatusOrThrow(application, Status.RUNNING);
+            }
+            matches = getApi().getEntityApi().getDescendantsSensor(
+                    application, application, sensor, typeRegex);
+            if (failIfNoMatches && matches.isEmpty()) {
+                throw new MojoFailureException("No entities in " + application + " matching " + typeRegex +
+                        " have a value for " + sensor);
+            }
+        } catch (Exception e) {
+            if (getForker() != null) {
+                getForker().cleanUp();
+            }
+            throw e;
         }
         getLog().info("Matches: " + Joiner.on(", ").withKeyValueSeparator("=").join(matches));
         String value;

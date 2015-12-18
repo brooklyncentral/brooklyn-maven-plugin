@@ -17,16 +17,31 @@ package io.brooklyn.maven;
 
 import java.util.Properties;
 
+import org.apache.maven.model.Build;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 
 public class BrooklynMavenProjectStub extends MavenProjectStub {
 
+    public static final String MOCK_OUTPUT_DIRECTORY = "/output/directory";
+
     Properties properties = new Properties();
+
+    @Override
+    public Build getBuild() {
+        return new MavenBuildStub();
+    }
 
     // Superclass returns a new instance of properties each time it's called.
     @Override
     public Properties getProperties() {
         return properties;
+    }
+
+    private static class MavenBuildStub extends Build {
+        @Override
+        public String getDirectory() {
+            return MOCK_OUTPUT_DIRECTORY;
+        }
     }
 
 }

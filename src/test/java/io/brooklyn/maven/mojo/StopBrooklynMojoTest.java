@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.brooklyn.maven;
+package io.brooklyn.maven.mojo;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.TimeUnit;
 
+import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.junit.Test;
 
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
+
+import io.brooklyn.maven.AbstractBrooklynMojoTest;
+import io.brooklyn.maven.fork.BasicBrooklynForker;
 
 public class StopBrooklynMojoTest extends AbstractBrooklynMojoTest {
 
@@ -31,7 +35,10 @@ public class StopBrooklynMojoTest extends AbstractBrooklynMojoTest {
         server.enqueue(new MockResponse());
         server.play();
 
+        final BasicBrooklynForker forker = new BasicBrooklynForker();
+        forker.setLogger(new ConsoleLogger());
         StopBrooklynMojo mojo = new StopBrooklynMojo(server.getUrl("/"));
+        mojo.setForker(forker);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
         executeMojoWithTimeout(mojo);
 
