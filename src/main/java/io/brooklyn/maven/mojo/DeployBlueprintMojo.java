@@ -123,7 +123,7 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
                 getLog().info("No property to set to new application ID");
             }
         } catch (Exception e) {
-            if (getForker() != null) {
+            if (getForker() != null && shouldTearDownOnFailure()) {
                 getLog().info("Exception deploying blueprint. Cleaning up forked servers.");
                 getForker().cleanUp();
             }

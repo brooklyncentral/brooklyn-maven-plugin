@@ -109,7 +109,7 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
                         " have a value for " + sensor);
             }
         } catch (Exception e) {
-            if (getForker() != null) {
+            if (getForker() != null && shouldTearDownOnFailure()) {
                 getForker().cleanUp();
             }
             throw e;

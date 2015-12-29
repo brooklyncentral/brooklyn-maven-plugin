@@ -73,6 +73,15 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
             defaultValue = "SECONDS")
     private TimeUnit pollUnit;
 
+    /**
+     * Sets whether servers started by {@link StartBrooklynMojo} should be
+     * stopped if execution of the goal fails.
+     */
+    @Parameter(
+            property = "brooklyn.tearDownOnFailure",
+            defaultValue = "true")
+    private boolean tearDownOnFailure;
+
     private BrooklynApi api;
 
     /**
@@ -85,9 +94,10 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
     public AbstractInvokeBrooklynMojo(URL server) {
         super();
         this.server = server;
-        // Values are set here to aid tests. They are overwritten when Maven invokes the plugin.
+        // Values are overwritten when Maven invokes the plugin.
         this.pollPeriod = 1;
         this.pollUnit = TimeUnit.SECONDS;
+        this.tearDownOnFailure = true;
     }
 
     protected BrooklynApi getApi() {
@@ -134,6 +144,10 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
 
     protected boolean isUnhealthyResponse(Response response) {
         return response.getStatus() < 200 || response.getStatus() >= 300;
+    }
+
+    protected boolean shouldTearDownOnFailure() {
+        return tearDownOnFailure;
     }
 
     /**

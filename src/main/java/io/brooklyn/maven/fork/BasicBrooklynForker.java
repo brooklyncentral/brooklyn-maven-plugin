@@ -64,8 +64,9 @@ public class BasicBrooklynForker implements BrooklynForker {
     }
 
     private void doCleanUp(ShutdownOptions options, ServerRecord record) {
-        logger.info("Stopping server at " + options.server() +
-                ", timeout=" + options.timeout() +
+        logger.info("Stopping server at " + options.server());
+        logger.debug("Stop options: " +
+                "timeout=" + options.timeout() +
                 ", stopApps=" + options.stopAllApplications() +
                 ", force=" + options.forceShutdownOnError());
         BrooklynApi api;
