@@ -17,6 +17,7 @@ package io.brooklyn.maven.mojo;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -42,6 +44,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import com.google.common.annotations.VisibleForTesting;
 
 import io.brooklyn.maven.fork.ForkOptions;
+import io.brooklyn.maven.fork.ForkedServer;
 import io.brooklyn.maven.fork.ProjectDependencySupplier;
 
 /**
@@ -190,7 +193,7 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
     }
 
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         String port = !Strings.isEmpty(bindPort) ? bindPort : reserveWebServerPort();
         getLog().info("Chosen port " + port + " for server");
 
@@ -211,11 +214,13 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
                 .username(username)
                 .password(password)
                 .build();
-        String serverUrl = getForker().execute(options).toString();
-        getProject().getProperties().setProperty(serverUrlProperty, serverUrl);
+
+        ForkedServer forkedServer = getForker().execute(options);
+        URL serverUrl = forkedServer.getServer();
+        getProject().getProperties().setProperty(serverUrlProperty, serverUrl.toString());
 
         if (waitForServerUp) {
-            waitForServerStart(serverUrl);
+            waitForServerStartOrExit(forkedServer);
             getLog().info("Server running at " + serverUrl);
             BrooklynApi api = getApi(serverUrl);
             getLog().info("Server version: " + api.getServerApi().getVersion().getVersion());
@@ -248,7 +253,7 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
         return getProject().getProperties().getProperty(SERVER_PORT_PROPERTY);
     }
 
-    protected BrooklynApi getApi(String server) {
+    protected BrooklynApi getApi(URL server) {
         if (username != null && password != null) {
             return new BrooklynApi(server, username, password);
         } else {
@@ -257,23 +262,29 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
     }
 
     /**
-     * Waits for the given endpoint to respond true to {@link ServerApi#isUp}.
+     * Waits for the given endpoint to respond true to {@link ServerApi#isUp}
+     * or for the forked process to have exited.
      */
-    private void waitForServerStart(String url) {
+    private void waitForServerStartOrExit(final ForkedServer forkedServer) throws MojoFailureException {
+        final URL url = forkedServer.getServer();
         final ServerApi api = getApi(url).getServerApi();
-        getLog().info("Waiting for server at " + url + " to be ready");
-        boolean isUp = Repeater.create("Waiting for server at " + url + " to be ready")
+        getLog().info("Waiting for server at " + url + " to be ready within " + getTimeout());
+        boolean isUp = Repeater.create("Waiting for server at " + url + " to be ready within " + getTimeout())
                 .every(Duration.ONE_SECOND)
                 .limitTimeTo(getTimeout())
                 .until(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
-                        return api.isUp();
+                        // The order of these is important - if forkedServer.hasExited() then api.isUp()
+                        // will throw an exception! The exception is thrown by RESTEasy.
+                        return forkedServer.hasExited() || api.isUp();
                     }
                 })
                 .run();
-        if (!isUp) {
-            getLog().warn("Server at " + url + " does not appear to be running after " + getTimeout());
+        if (forkedServer.hasExited()) {
+            throw new MojoFailureException("Forked server exited unexpectedly (exit code " + forkedServer.getExitCode() + ")");
+        } else if (!isUp) {
+            throw new MojoFailureException("Server at " + url + " does not appear to be running after " + getTimeout());
         }
     }
 
