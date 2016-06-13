@@ -85,6 +85,7 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
                 bindAddress,
                 bindPort,
                 "mainClass",
+                "launchCommand",
                 "classpathScope",
                 mainUrlProperty);
         mojo.setProject(project);
@@ -101,6 +102,7 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
         ForkOptions options = forker.options;
         assertNotNull("BrooklynForker class was not called", options);
         assertEquals("mainClass", options.mainClass());
+        assertEquals("launchCommand", options.launchCommand());
         assertEquals(bindAddress, options.bindAddress());
         assertEquals(bindPort, options.bindPort());
         assertEquals(dependencySupplier.get(), options.classpath());

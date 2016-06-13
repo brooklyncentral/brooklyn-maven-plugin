@@ -139,7 +139,7 @@ public class BasicBrooklynForker implements BrooklynForker {
         cl.createArg().setValue("-classpath");
         cl.createArg().setValue(buildClasspath(options));
         cl.createArg().setValue(options.mainClass());
-        cl.createArg().setValue("launch");
+        cl.createArg().setValue(options.launchCommand());
         cl.createArg().setValue("--bindAddress");
         cl.createArg().setValue(options.bindAddress());
         cl.createArg().setValue("--port");

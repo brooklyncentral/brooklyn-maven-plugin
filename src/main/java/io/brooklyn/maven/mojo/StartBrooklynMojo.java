@@ -78,6 +78,15 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
     private String mainClass;
 
     /**
+     * The main command for the process.
+     */
+    @Parameter(
+            property = "brooklyn.launchCommand",
+            defaultValue = "launch",
+            required = true)
+    private String launchCommand;
+
+    /**
      * The IP address of the NIC to bind the Brooklyn Management Console to.
      */
     @Parameter(
@@ -163,18 +172,19 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
      * Constructor for use by Maven/Guice.
      */
     StartBrooklynMojo() {
-        this(null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null);
     }
 
     @VisibleForTesting
     StartBrooklynMojo(
             ProjectDependencySupplier dependencySupplier, String bindAddress, String bindPort,
-            String mainClass, String serverClasspathScope, String serverUrlProperty) {
+            String mainClass, String launchCommand, String serverClasspathScope, String serverUrlProperty) {
         super();
         this.dependencySupplier = dependencySupplier;
         this.bindAddress = bindAddress;
         this.bindPort = bindPort;
         this.mainClass = mainClass;
+        this.launchCommand = launchCommand;
         this.serverClasspathScope = serverClasspathScope;
         this.serverUrlProperty = serverUrlProperty;
     }
@@ -195,6 +205,7 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
                 .bindAddress(bindAddress)
                 .bindPort(port)
                 .mainClass(mainClass)
+                .launchCommand(launchCommand)
                 .additionalArguments(arguments != null ? arguments : Collections.<String>emptyList())
                 .classpath(dependencySupplier.get())
                 .username(username)
