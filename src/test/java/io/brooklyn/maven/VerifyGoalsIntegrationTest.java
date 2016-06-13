@@ -119,7 +119,7 @@ public class VerifyGoalsIntegrationTest extends AbstractBrooklynMojoTest {
                 "bindPort", String.valueOf(port)));
         verifier.verifyErrorFreeLog();
         verifier.verifyTextInLog("Server running at http://127.0.0.1:" + port);
-        verifier.verifyTextInLog("Server version: 0.9.0-SNAPSHOT");
+        verifier.verifyTextInLog("Server version: 0.9.0");
         verifier.verifyTextInLog("Stopping server at http://127.0.0.1:" + port);
     }
 

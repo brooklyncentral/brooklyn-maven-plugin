@@ -44,7 +44,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <brooklyn.version>0.8.0-incubating</brooklyn.version>
+        <brooklyn.version>0.9.0</brooklyn.version>
         <maven.version>3.2.5</maven.version>
 
         <mockwebserver.version>2.1.0</mockwebserver.version>
