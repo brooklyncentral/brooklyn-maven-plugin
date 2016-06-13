@@ -24,6 +24,7 @@
 
     <properties>
         <java.version>1.7</java.version>
+        <brooklyn.version>0.9.0</brooklyn.version>
     </properties>
 
     <repositories>
@@ -55,7 +56,7 @@
             <dependency>
                 <groupId>org.apache.brooklyn</groupId>
                 <artifactId>brooklyn-all</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>${brooklyn.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -22,6 +22,7 @@ public abstract class ForkOptions {
 
     // Brooklyn options
     public abstract String mainClass();
+    public abstract String launchCommand();
     public abstract String bindAddress();
     public abstract String bindPort();
     @Nullable public abstract String username();
@@ -35,6 +36,7 @@ public abstract class ForkOptions {
         public abstract Builder classpath(List<Path> classpath);
 
         // Brooklyn options
+        public abstract Builder launchCommand(String command);
         public abstract Builder mainClass(String clazz);
         public abstract Builder bindAddress(String address);
         public abstract Builder bindPort(String port);

@@ -5,7 +5,9 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -30,6 +32,7 @@ import com.google.common.io.Resources;
         hint = "default")
 public class BasicBrooklynForker implements BrooklynForker {
 
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Map<URL, ServerRecord> forks = Maps.newHashMap();
     private final Object forksLock = new Object[0];
 
@@ -53,6 +56,7 @@ public class BasicBrooklynForker implements BrooklynForker {
                 }
             }
         }
+        executorService.shutdown();
     }
 
     @Override
@@ -88,8 +92,8 @@ public class BasicBrooklynForker implements BrooklynForker {
             try {
                 // Waits for the forked process to exit.
                 logger.debug("Waiting for forked process to complete");
-                record.terminationCallable.call();
-                logger.debug("Forked process complete");
+                int status = record.forkedServer.getExitCode();
+                logger.debug("Forked process complete with exit status " + status);
             } catch (Exception e) {
                 logger.warn("Exception waiting for server at " + options.server() + " to exit", e);
             }
@@ -99,7 +103,7 @@ public class BasicBrooklynForker implements BrooklynForker {
     }
 
     @Override
-    public URL execute(ForkOptions options) throws MojoExecutionException {
+    public ForkedServer execute(ForkOptions options) throws MojoExecutionException {
         Commandline cl = buildCommandLine(options);
         // DefaultConsumer simply calls System.out.println.
         StreamConsumer sysout = new DefaultConsumer();
@@ -108,22 +112,24 @@ public class BasicBrooklynForker implements BrooklynForker {
         final int shutdownTimeout = 60;
         logger.debug("Executing: " + cl);
         try {
-            // First null: no stdin. Second: no runnable after termination.
-            CommandLineCallable callable = CommandLineUtils.executeCommandLineAsCallable(cl, null, sysout, syserr, shutdownTimeout, null);
-
             // TODO: should inject whether server is http or https.
             final URL serverUrl = new URL("http://" + options.bindAddress() + ":" + options.bindPort());
+            // First null: no stdin. Second: no runnable after termination.
+            final CommandLineCallable callable = CommandLineUtils.executeCommandLineAsCallable(
+                    cl, null, sysout, syserr, shutdownTimeout, null);
+            final Future<Integer> future = executorService.submit(callable);
+            final ForkedServer forkedServer = new ForkedServer(serverUrl, future);
 
             // Record flags so server can be killed cleanly later.
-            ShutdownOptions shutdownOptions = ShutdownOptions.builder()
+            final ShutdownOptions shutdownOptions = ShutdownOptions.builder()
                     .server(serverUrl)
                     .username(options.username())
                     .password(options.password())
                     .build();
             synchronized (forksLock) {
-                forks.put(serverUrl, new ServerRecord(shutdownOptions, callable));
+                forks.put(serverUrl, new ServerRecord(shutdownOptions, forkedServer));
             }
-            return serverUrl;
+            return forkedServer;
         } catch (Exception e) {
             throw new MojoExecutionException("Error forking server", e);
         }
@@ -139,7 +145,7 @@ public class BasicBrooklynForker implements BrooklynForker {
         cl.createArg().setValue("-classpath");
         cl.createArg().setValue(buildClasspath(options));
         cl.createArg().setValue(options.mainClass());
-        cl.createArg().setValue("launch");
+        cl.createArg().setValue(options.launchCommand());
         cl.createArg().setValue("--bindAddress");
         cl.createArg().setValue(options.bindAddress());
         cl.createArg().setValue("--port");
@@ -178,10 +184,10 @@ public class BasicBrooklynForker implements BrooklynForker {
 
     private static class ServerRecord {
         final ShutdownOptions shutdownOptions;
-        final Callable<?> terminationCallable;
-        private ServerRecord(ShutdownOptions shutdownOptions, Callable<?> terminationCallable) {
+        final ForkedServer forkedServer;
+        private ServerRecord(ShutdownOptions shutdownOptions, ForkedServer forkedServer) {
             this.shutdownOptions = shutdownOptions;
-            this.terminationCallable = terminationCallable;
+            this.forkedServer = forkedServer;
         }
     }
 

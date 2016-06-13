@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.brooklyn.util.net.Networking;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.junit.Before;
@@ -40,7 +41,6 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.RecordedRequest;
-import com.sun.jersey.core.util.Base64;
 
 import io.brooklyn.maven.AbstractBrooklynMojoTest;
 import io.brooklyn.maven.BrooklynMavenProjectStub;
@@ -261,7 +261,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         String auth = request.getHeader("Authorization");
         assertNotNull("Expected Authorization header, got: " + Iterables.toString(request.getHeaders()), auth);
-        String userpass = Base64.base64Decode(auth.substring(6));
+        String userpass = new String(Base64.decodeBase64(auth.substring(6)));
         String authUser = userpass.substring(0, userpass.indexOf(":"));
         String authPass = userpass.substring(userpass.indexOf(":") + 1);
         assertEquals(user, authUser);

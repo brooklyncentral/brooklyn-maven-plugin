@@ -24,17 +24,20 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Futures;
 
 import io.brooklyn.maven.AbstractBrooklynMojoTest;
 import io.brooklyn.maven.BrooklynMavenProjectStub;
 import io.brooklyn.maven.fork.BrooklynForker;
 import io.brooklyn.maven.fork.ForkOptions;
+import io.brooklyn.maven.fork.ForkedServer;
 import io.brooklyn.maven.fork.ProjectDependencySupplier;
 import io.brooklyn.maven.fork.ShutdownOptions;
 
@@ -46,10 +49,11 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
         ForkOptions options;
 
         @Override
-        public URL execute(ForkOptions options) throws MojoExecutionException {
+        public ForkedServer execute(ForkOptions options) throws MojoExecutionException {
             try {
                 this.options = options;
-                return new URL("http", options.bindAddress(), options.bindPort());
+                Future<Integer> mockExitStatus = Futures.immediateFuture(0);
+                return new ForkedServer(new URL("http", options.bindAddress(), options.bindPort()), mockExitStatus);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -85,6 +89,7 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
                 bindAddress,
                 bindPort,
                 "mainClass",
+                "launchCommand",
                 "classpathScope",
                 mainUrlProperty);
         mojo.setProject(project);
@@ -101,6 +106,7 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
         ForkOptions options = forker.options;
         assertNotNull("BrooklynForker class was not called", options);
         assertEquals("mainClass", options.mainClass());
+        assertEquals("launchCommand", options.launchCommand());
         assertEquals(bindAddress, options.bindAddress());
         assertEquals(bindPort, options.bindPort());
         assertEquals(dependencySupplier.get(), options.classpath());
