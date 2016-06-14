@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -92,8 +93,10 @@ public class BasicBrooklynForker implements BrooklynForker {
             try {
                 // Waits for the forked process to exit.
                 logger.debug("Waiting for forked process to complete");
-                int status = record.forkedServer.getExitCode();
-                logger.debug("Forked process complete with exit status " + status);
+                // Status is -1 if it timed out.
+                int status = record.forkedServer.getExitCode(30, TimeUnit.SECONDS);
+                String statusMessage = status >= 0 ? " with exit status " + status : ", unable to determine exit status";
+                logger.debug("Forked process complete" + statusMessage);
             } catch (Exception e) {
                 logger.warn("Exception waiting for server at " + options.server() + " to exit", e);
             }
@@ -108,15 +111,14 @@ public class BasicBrooklynForker implements BrooklynForker {
         // DefaultConsumer simply calls System.out.println.
         StreamConsumer sysout = new DefaultConsumer();
         StreamConsumer syserr = sysout;
-        // todo would like to inject but surprising to user to have to give the argument to the start goal.
-        final int shutdownTimeout = 60;
         logger.debug("Executing: " + cl);
         try {
             // TODO: should inject whether server is http or https.
             final URL serverUrl = new URL("http://" + options.bindAddress() + ":" + options.bindPort());
             // First null: no stdin. Second: no runnable after termination.
+            // Zero: wait forever for termination.
             final CommandLineCallable callable = CommandLineUtils.executeCommandLineAsCallable(
-                    cl, null, sysout, syserr, shutdownTimeout, null);
+                    cl, null, sysout, syserr, 0, null);
             final Future<Integer> future = executorService.submit(callable);
             final ForkedServer forkedServer = new ForkedServer(serverUrl, future);
 
