@@ -117,6 +117,17 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
     private List<String> arguments;
 
     /**
+     * Additional options for the Java process, for example to start a server listening for
+     * a remote debugger on port 5005:
+     * <pre>
+     *   &lt;javaOption&gt;-Xverify:none&lt;/javaOption&gt;
+     *   &lt;javaOption&gt;-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005&lt;/javaOption&gt;
+     * </pre>
+     */
+    @Parameter
+    private List<String> javaOptions;
+
+    /**
      * The Maven scope to include on the server's classpath. Defaults to test. Setting
      * a value that is not a standard scope will mean there are no additions to the
      * classpath and Brooklyn's main class will not be found. Consider setting {@link
@@ -210,6 +221,7 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
                 .mainClass(mainClass)
                 .launchCommand(launchCommand)
                 .additionalArguments(arguments != null ? arguments : Collections.<String>emptyList())
+                .javaOptions(javaOptions != null ? javaOptions : Collections.<String>emptyList())
                 .classpath(dependencySupplier.get())
                 .username(username)
                 .password(password)

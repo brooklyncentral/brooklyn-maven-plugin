@@ -144,6 +144,9 @@ public class BasicBrooklynForker implements BrooklynForker {
         cl.setWorkingDirectory(createOutputDirectory(options.workDir()));
         // todo: use same java version as maven?
         cl.setExecutable("java");
+        for (String javaOption : options.javaOptions()) {
+            cl.createArg().setValue(javaOption);
+        }
         cl.createArg().setValue("-classpath");
         cl.createArg().setValue(buildClasspath(options));
         cl.createArg().setValue(options.mainClass());
