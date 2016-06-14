@@ -17,6 +17,7 @@ public abstract class ForkOptions {
 
     // General process options
     public abstract Path workDir();
+    public abstract List<String> javaOptions();
     public abstract List<String> additionalArguments();
     public abstract List<Path> classpath();
 
@@ -31,6 +32,7 @@ public abstract class ForkOptions {
     @AutoValue.Builder
     public abstract static class Builder {
         // General process options
+        public abstract Builder javaOptions(List<String> options);
         public abstract Builder workDir(Path dir);
         public abstract Builder additionalArguments(List<String> arguments);
         public abstract Builder classpath(List<Path> classpath);
