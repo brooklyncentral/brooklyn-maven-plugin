@@ -1,7 +1,7 @@
 Injecting sensors into your build
 =================================
 
-The [example-pom](https://github.com/brooklyncentral/brooklyn-maven-plugin/tree/master/src/test/projects/example-app)
+The [example-app](https://github.com/brooklyncentral/brooklyn-maven-plugin/tree/master/src/test/projects/example-app)
 project:
 
 * Runs a Brooklyn 0.8.0-incubating server
