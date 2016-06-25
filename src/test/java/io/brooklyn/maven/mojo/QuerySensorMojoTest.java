@@ -38,6 +38,10 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
     private static final String TYPE_REGEX = "foo.*";
     private static final String PROJECT_PROPERTY = "build.property";
 
+    private QuerySensorMojo newQuerySensorMojo() {
+        return new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+    }
+
     @Test
     public void testMojoQueriesSensorValueAndSetsPropertyOnProject() throws Exception {
         final String sensorVal = "Bananaman";
@@ -46,8 +50,11 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
         server.play();
 
         MavenProject mavenProject = new BrooklynMavenProjectStub();
-        QuerySensorMojo mojo = new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+        QuerySensorMojo mojo = newQuerySensorMojo();
         mojo.setProject(mavenProject);
+        // Test ignoreSkipTests at the same time.
+        mojo.setIgnoreSkipTests();
+        mojo.setSkipTests();
         executeMojoWithTimeout(mojo);
 
         RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
@@ -63,7 +70,7 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
     public void testBuildFailsIfNoEntitiesMatchRegex() throws Exception {
         server.enqueue(newJsonResponse().setBody("{}"));
         server.play();
-        QuerySensorMojo mojo = new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+        QuerySensorMojo mojo = newQuerySensorMojo();
         mojo.setFailIfNoMatches();
         try {
             executeMojoWithTimeout(mojo);
@@ -83,7 +90,7 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
         server.play();
 
         MavenProject mavenProject = new BrooklynMavenProjectStub();
-        QuerySensorMojo mojo = new QuerySensorMojo(server.getUrl("/"), APPLICATION, SENSOR, PROJECT_PROPERTY, TYPE_REGEX);
+        QuerySensorMojo mojo = newQuerySensorMojo();
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
         mojo.setProject(mavenProject);
         mojo.setWaitForRunning();
@@ -92,4 +99,22 @@ public class QuerySensorMojoTest extends AbstractBrooklynMojoTest {
         assertEquals(4, server.getRequestCount());
     }
 
+    @Test
+    public void testRespectsSkipTests() throws Exception {
+        server.play();
+        QuerySensorMojo mojo = newQuerySensorMojo();
+        mojo.setSkipTests();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipTests set", 0, server.getRequestCount());
+    }
+
+    @Test
+    public void testRespectsSkipITs() throws Exception {
+        server.play();
+        QuerySensorMojo mojo = newQuerySensorMojo();
+        mojo.setSkipITs();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipTests set", 0, server.getRequestCount());
+    }
+    
 }

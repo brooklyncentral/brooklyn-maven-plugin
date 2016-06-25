@@ -40,11 +40,32 @@ public class StopBrooklynMojoTest extends AbstractBrooklynMojoTest {
         StopBrooklynMojo mojo = new StopBrooklynMojo(server.getUrl("/"));
         mojo.setForker(forker);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
+        // Test ignoreSkipTests at the same time.
+        mojo.setIgnoreSkipTests();
+        mojo.setSkipTests();
         executeMojoWithTimeout(mojo);
 
         RecordedRequest r = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/server/shutdown", r.getPath());
         assertEquals("POST", r.getMethod());
+    }
+
+    @Test
+    public void testRespectsSkipTests() throws Exception {
+        server.play();
+        StopBrooklynMojo mojo = new StopBrooklynMojo();
+        mojo.setSkipTests();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipTests set", 0, server.getRequestCount());
+    }
+
+    @Test
+    public void testRespectsSkipITs() throws Exception {
+        server.play();
+        StopBrooklynMojo mojo = new StopBrooklynMojo();
+        mojo.setSkipITs();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipITs set", 0, server.getRequestCount());
     }
 
 }

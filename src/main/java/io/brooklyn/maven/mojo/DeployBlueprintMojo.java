@@ -105,7 +105,12 @@ public class DeployBlueprintMojo extends AbstractInvokeBrooklynMojo {
         this.stopAppOnDeployError = true;
     }
 
-    public void execute() throws MojoFailureException {
+    @Override
+    public void doIt() throws MojoFailureException {
+        if (skipExecution()) {
+            getLog().info("Tests are skipped.");
+            return;
+        }
         getLog().debug("Working with server at " + server);
         // Propagates all non-mojo exceptions as MojoFailureExceptions
         try {

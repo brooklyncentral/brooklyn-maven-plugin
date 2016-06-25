@@ -74,7 +74,11 @@ public class StopBrooklynMojo extends AbstractInvokeBrooklynMojo {
     }
 
     @Override
-    public void execute() {
+    public void doIt() {
+        if (skipExecution()) {
+            getLog().info("Tests are skipped.");
+            return;
+        }
         ShutdownOptions options = ShutdownOptions.builder()
                 .server(server)
                 .username(username)

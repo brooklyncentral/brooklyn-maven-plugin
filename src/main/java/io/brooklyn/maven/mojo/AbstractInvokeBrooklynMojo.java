@@ -29,6 +29,7 @@ import org.apache.brooklyn.rest.client.BrooklynApi;
 import org.apache.brooklyn.rest.domain.Status;
 import org.apache.brooklyn.util.repeat.Repeater;
 import org.apache.brooklyn.util.time.Duration;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -40,8 +41,9 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
     /**
      * The URL of the Brooklyn server to communicate with.
      */
+    // Not marked required in case the server is to be created by the start-server goal
+    // but -DskipTests or -DskipITs are set (so the server isn't started).
     @Parameter(
-            required = true,
             property = "brooklyn.server")
     protected URL server;
 
@@ -119,7 +121,6 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
         return Duration.of(pollPeriod, pollUnit);
     }
 
-
     AbstractInvokeBrooklynMojo setPollPeriod(int period, TimeUnit unit) {
         this.pollPeriod = checkNotNull(period, "period");
         this.pollUnit = checkNotNull(unit, "unit");
@@ -130,6 +131,15 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
         this.username = checkNotNull(user, "user");
         this.password = checkNotNull(password, "password");
         return this;
+    }
+
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        if (!skipExecution() && server == null) {
+            throw new MojoFailureException("server parameter is unset");
+        } else {
+            super.execute();
+        }
     }
 
     /**

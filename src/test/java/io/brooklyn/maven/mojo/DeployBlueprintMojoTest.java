@@ -79,6 +79,9 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath, NEW_APP_PROPERTY);
         mojo.setPollPeriod(1, TimeUnit.MILLISECONDS);
         mojo.setProject(project);
+        // Test ignoreSkipTests at the same time.
+        mojo.setSkipTests();
+        mojo.setIgnoreSkipTests();
         executeMojoWithTimeout(mojo);
 
         // Mojo posts blueprint
@@ -289,6 +292,24 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
             assertTrue("Expected exception message to contain result and detailed status of deploy task. Is: " + e.getMessage(),
                     e.getMessage().contains(expectedResult));
         }
+    }
+
+    @Test
+    public void testRespectsSkipTests() throws Exception {
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
+        mojo.setSkipTests();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipTests set", 0, server.getRequestCount());
+    }
+
+    @Test
+    public void testRespectsSkipITs() throws Exception {
+        server.play();
+        DeployBlueprintMojo mojo = new DeployBlueprintMojo(server.getUrl("/"), blueprintPath);
+        mojo.setSkipITs();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipITs set", 0, server.getRequestCount());
     }
 
 }
