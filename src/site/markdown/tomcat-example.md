@@ -35,7 +35,7 @@ The important bits of the pom are:
 <plugin>
     <groupId>io.brooklyn.maven</groupId>
     <artifactId>brooklyn-maven-plugin</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.0</version>
     <executions>
         <execution>
             <id>Run Brooklyn</id>
