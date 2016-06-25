@@ -51,7 +51,11 @@ public class StopApplicationMojo extends AbstractInvokeBrooklynMojo {
     }
 
     @Override
-    public void execute() {
+    public void doIt() {
+        if (skipExecution()) {
+            getLog().info("Tests are skipped.");
+            return;
+        }
         getLog().info("Stopping application " + application);
         try {
             String timeout = String.valueOf(getTimeout().toMilliseconds());

@@ -96,7 +96,11 @@ public class QuerySensorMojo extends AbstractInvokeBrooklynMojo {
     }
 
     @Override
-    public void execute() throws MojoFailureException {
+    public void doIt() throws MojoFailureException {
+        if (skipExecution()) {
+            getLog().info("Tests are skipped.");
+            return;
+        }
         Map<String, Object> matches;
         try {
             if (waitForRunning) {

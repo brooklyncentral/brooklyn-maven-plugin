@@ -36,6 +36,9 @@ public class StopApplicationMojoTest extends AbstractBrooklynMojoTest {
         server.play();
 
         StopApplicationMojo mojo = new StopApplicationMojo(server.getUrl("/"), APPLICATION);
+        // Test ignoreSkipTests at the same time.
+        mojo.setIgnoreSkipTests();
+        mojo.setSkipTests();
         executeMojoWithTimeout(mojo);
 
         RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
@@ -44,6 +47,24 @@ public class StopApplicationMojoTest extends AbstractBrooklynMojoTest {
         assertEquals(expectedPath, request.getPath());
         assertEquals("POST", request.getMethod());
         assertEquals(1, server.getRequestCount());
+    }
+
+    @Test
+    public void testRespectsSkipTests() throws Exception {
+        server.play();
+        StopApplicationMojo mojo = new StopApplicationMojo();
+        mojo.setSkipTests();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipTests set", 0, server.getRequestCount());
+    }
+
+    @Test
+    public void testRespectsSkipITs() throws Exception {
+        server.play();
+        StopApplicationMojo mojo = new StopApplicationMojo();
+        mojo.setSkipITs();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipITs set", 0, server.getRequestCount());
     }
 
 }

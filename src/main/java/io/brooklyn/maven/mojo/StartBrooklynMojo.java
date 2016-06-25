@@ -204,7 +204,11 @@ public class StartBrooklynMojo extends AbstractBrooklynMojo {
     }
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void doIt() throws MojoExecutionException, MojoFailureException {
+        if (skipExecution()) {
+            getLog().info("Tests are skipped.");
+            return;
+        }
         String port = !Strings.isEmpty(bindPort) ? bindPort : reserveWebServerPort();
         getLog().info("Chosen port " + port + " for server");
 

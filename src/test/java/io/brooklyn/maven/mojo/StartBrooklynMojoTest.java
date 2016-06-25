@@ -94,6 +94,9 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
                 mainUrlProperty);
         mojo.setProject(project);
         mojo.setForker(forker);
+        // Test ignoreSkipTests at the same time.
+        mojo.setIgnoreSkipTests();
+        mojo.setSkipTests();
         executeMojoWithTimeout(mojo);
 
         Object urlProperty = project.getProperties().get(mainUrlProperty);
@@ -110,6 +113,24 @@ public class StartBrooklynMojoTest extends AbstractBrooklynMojoTest {
         assertEquals(bindAddress, options.bindAddress());
         assertEquals(bindPort, options.bindPort());
         assertEquals(dependencySupplier.get(), options.classpath());
+    }
+
+    @Test
+    public void testRespectsSkipTests() throws Exception {
+        server.play();
+        StartBrooklynMojo mojo = new StartBrooklynMojo();
+        mojo.setSkipTests();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipTests set", 0, server.getRequestCount());
+    }
+
+    @Test
+    public void testRespectsSkipITs() throws Exception {
+        server.play();
+        StartBrooklynMojo mojo = new StartBrooklynMojo();
+        mojo.setSkipITs();
+        mojo.execute();
+        assertEquals("expected no requests to server when skipITs set", 0, server.getRequestCount());
     }
 
 }
