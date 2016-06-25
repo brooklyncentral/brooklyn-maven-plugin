@@ -65,7 +65,7 @@ public abstract class AbstractBrooklynMojoTest {
     protected void executeMojoWithTimeout(AbstractMojo mojo) throws Exception {
         String configuredTimeout = System.getProperty(TIMEOUT_PROPERTY);
         Integer timeout = configuredTimeout != null
-                ? Integer.valueOf(configuredTimeout)
+                ? Integer.parseInt(configuredTimeout)
                 : 2;
 
         // The timeout is overkill on a normal machine but plausible on Travis, etc.

@@ -18,7 +18,7 @@ public abstract class ShutdownOptions {
                 ;
     }
 
-    public abstract URL server();
+    public abstract String server();
     public abstract boolean stopAllApplications();
     public abstract boolean forceShutdownOnError();
     public abstract String timeout();
@@ -27,7 +27,10 @@ public abstract class ShutdownOptions {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder server(URL server);
+        public abstract Builder server(String server);
+        public Builder server(URL server) {
+            return server(server.toString());
+        }
         public abstract Builder stopAllApplications(boolean stopAllApplications);
         public abstract Builder forceShutdownOnError(boolean forceShutdownOnError);
         public abstract Builder timeout(String timeout);

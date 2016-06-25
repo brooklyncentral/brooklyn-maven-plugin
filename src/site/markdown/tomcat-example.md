@@ -4,7 +4,7 @@ Injecting sensors into your build
 The [example-app](https://github.com/brooklyncentral/brooklyn-maven-plugin/tree/master/src/test/projects/example-app)
 project:
 
-* Runs a Brooklyn 0.8.0-incubating server
+* Runs a Brooklyn 0.9.0 server
 * Deploys this blueprint:
 
 ```yaml
@@ -28,7 +28,7 @@ The important bits of the pom are:
     <dependency>
         <groupId>org.apache.brooklyn</groupId>
         <artifactId>brooklyn-all</artifactId>
-        <version>0.8.0-incubating</version>
+        <version>0.9.0</version>
     </dependency>
 </dependencies>
 
@@ -88,4 +88,3 @@ At the end of the build you should see output like:
     [echo] Application: T0tERELL
     [echo] Sensor value: http://127.0.0.1:8080/
 ```
-

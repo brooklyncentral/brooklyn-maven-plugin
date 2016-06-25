@@ -34,7 +34,7 @@ import com.google.common.io.Resources;
 public class BasicBrooklynForker implements BrooklynForker {
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final Map<URL, ServerRecord> forks = Maps.newHashMap();
+    private final Map<String, ServerRecord> forks = Maps.newHashMap();
     private final Object forksLock = new Object[0];
 
     private Logger logger;
@@ -63,7 +63,7 @@ public class BasicBrooklynForker implements BrooklynForker {
     @Override
     public void cleanUp(ShutdownOptions options) {
         synchronized (forksLock) {
-            ServerRecord record = forks.remove(options.server());
+            ServerRecord record = forks.remove(options.server().toString());
             doCleanUp(options, record);
         }
     }
@@ -76,9 +76,9 @@ public class BasicBrooklynForker implements BrooklynForker {
                 ", force=" + options.forceShutdownOnError());
         BrooklynApi api;
         if (options.username() == null || options.password() == null) {
-            api = new BrooklynApi(options.server());
+            api = BrooklynApi.newInstance(options.server().toString());
         } else {
-            api = new BrooklynApi(options.server(), options.username(), options.password());
+            api = BrooklynApi.newInstance(options.server().toString(), options.username(), options.password());
         }
         api.getServerApi().shutdown(
                 options.stopAllApplications(),
@@ -129,7 +129,7 @@ public class BasicBrooklynForker implements BrooklynForker {
                     .password(options.password())
                     .build();
             synchronized (forksLock) {
-                forks.put(serverUrl, new ServerRecord(shutdownOptions, forkedServer));
+                forks.put(serverUrl.toString(), new ServerRecord(shutdownOptions, forkedServer));
             }
             return forkedServer;
         } catch (Exception e) {
@@ -166,7 +166,10 @@ public class BasicBrooklynForker implements BrooklynForker {
      */
     private String createOutputDirectory(Path workingDir) throws MojoExecutionException {
         Path confDir = workingDir.resolve("conf");
-        confDir.toFile().mkdirs();
+        boolean createdOutputDir = confDir.toFile().mkdirs();
+        if (!createdOutputDir) {
+            throw new MojoExecutionException("Could not create configuration directory: " + confDir);
+        }
         try {
             String logback = Resources.asCharSource(getClass().getResource("/logback.xml"), Charsets.UTF_8).read();
             Files.write(logback, confDir.resolve("logback.xml").toFile(), Charsets.UTF_8);
