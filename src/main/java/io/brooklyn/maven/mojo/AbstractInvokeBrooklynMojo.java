@@ -170,7 +170,7 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
         final AtomicReference<Status> appStatus = new AtomicReference<Status>(Status.UNKNOWN);
         final boolean shortcutOnError = !Status.ERROR.equals(desiredStatus) && !Status.UNKNOWN.equals(desiredStatus);
         getLog().info("Waiting " + getTimeout() + " from " + new Date() + " for application " + application + " to be " + desiredStatus);
-        boolean finalAppStatusKnown = Repeater.create("Waiting for application " + application + " status to be " + desiredStatus)
+        Repeater.create("Waiting for application " + application + " status to be " + desiredStatus)
                 .every(getPollPeriod())
                 .limitTimeTo(getTimeout())
                 .rethrowExceptionImmediately()

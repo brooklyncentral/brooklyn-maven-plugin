@@ -22,6 +22,8 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.spi.CharsetProvider;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.brooklyn.util.net.Networking;
@@ -88,7 +90,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/applications", request.getPath());
         assertEquals("POST", request.getMethod());
-        assertEquals(YAML, new String(request.getBody()));
+        assertEquals(YAML, new String(request.getBody(), Charset.forName("UTF-8")));
 
         // Mojo waits for blueprint to be running
         request = server.takeRequest(1, TimeUnit.MILLISECONDS);
@@ -129,7 +131,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         assertEquals("/v1/applications", request.getPath());
         assertEquals("POST", request.getMethod());
-        assertEquals(YAML, new String(request.getBody()));
+        assertEquals(YAML, new String(request.getBody(), Charset.forName("UTF-8")));
 
         // Subsequent steps are already tested by testPostsConfiguredBlueprintToServerAndSetsConfiguredProperty.
     }
@@ -264,7 +266,7 @@ public class DeployBlueprintMojoTest extends AbstractBrooklynMojoTest {
         RecordedRequest request = server.takeRequest(1, TimeUnit.MILLISECONDS);
         String auth = request.getHeader("Authorization");
         assertNotNull("Expected Authorization header, got: " + Iterables.toString(request.getHeaders()), auth);
-        String userpass = new String(Base64.decodeBase64(auth.substring(6)));
+        String userpass = new String(Base64.decodeBase64(auth.substring(6)), Charset.forName("UTF-8"));
         String authUser = userpass.substring(0, userpass.indexOf(":"));
         String authPass = userpass.substring(userpass.indexOf(":") + 1);
         assertEquals(user, authUser);
