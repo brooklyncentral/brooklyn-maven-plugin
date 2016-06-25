@@ -1,2 +1,3 @@
 io.brooklyn.junit.category
 io.brooklyn.maven
+io.brooklyn.maven.mojo

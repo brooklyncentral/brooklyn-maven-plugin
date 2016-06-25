@@ -1,1 +1,3 @@
-io.brooklyn.maven
+io.brooklyn.maven.configurator
+io.brooklyn.maven.fork
+io.brooklyn.maven.mojo
