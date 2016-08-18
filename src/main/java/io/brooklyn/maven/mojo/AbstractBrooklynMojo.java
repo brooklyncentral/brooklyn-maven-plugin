@@ -44,6 +44,14 @@ public abstract class AbstractBrooklynMojo extends AbstractMojo {
     private TimeUnit timeoutUnit;
 
     /**
+     * Configure the goal to skip execution without disabling tests.
+     */
+    @Parameter(
+            property = "skipBrooklyn",
+            defaultValue = "false")
+    private Boolean skipBrooklyn;
+
+    /**
      * Configure the goal to skip execution.
      */
     @Parameter(
@@ -60,8 +68,9 @@ public abstract class AbstractBrooklynMojo extends AbstractMojo {
     private Boolean skipITs;
 
     /**
-     * Configure the goal to ignore {@link #skipTests}. Useful if your use of the plugin
-     * is outside of the default pre- and post-integration-test phases.
+     * Configure the goal to ignore {@link #skipTests} and {@link #skipITs}.
+     * Useful if your use of the plugin is outside of the default pre- and
+     * post-integration-test phases.
      */
     @Parameter(
             property = "ignoreSkipTests",
@@ -75,6 +84,7 @@ public abstract class AbstractBrooklynMojo extends AbstractMojo {
         this.skipTests = false;
         this.skipITs = false;
         this.ignoreSkipTests = false;
+        this.skipBrooklyn = false;
     }
 
     protected MavenProject getProject() {
@@ -108,10 +118,10 @@ public abstract class AbstractBrooklynMojo extends AbstractMojo {
     }
 
     /**
-     * @return true if either skipTests or skipITs is true and ignoreSkipTests is false.
+     * @return true if skipBrooklyn is true and either skipTests or skipITs is true and ignoreSkipTests is false.
      */
     protected boolean skipExecution() {
-        return (skipTests || skipITs) && !ignoreSkipTests;
+        return skipBrooklyn || ((skipTests || skipITs) && !ignoreSkipTests);
     }
 
     @VisibleForTesting
