@@ -112,7 +112,6 @@ public abstract class AbstractBrooklynMojo extends AbstractMojo {
 
     @VisibleForTesting
     AbstractBrooklynMojo setTimeout(int timeout, TimeUnit unit) {
-        this.timeout = checkNotNull(timeout, "timeout");
         this.timeoutUnit = checkNotNull(unit, "unit");
         return this;
     }

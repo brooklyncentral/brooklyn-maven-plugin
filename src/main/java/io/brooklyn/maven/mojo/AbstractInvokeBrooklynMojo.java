@@ -122,7 +122,6 @@ public abstract class AbstractInvokeBrooklynMojo extends AbstractBrooklynMojo {
     }
 
     AbstractInvokeBrooklynMojo setPollPeriod(int period, TimeUnit unit) {
-        this.pollPeriod = checkNotNull(period, "period");
         this.pollUnit = checkNotNull(unit, "unit");
         return this;
     }
