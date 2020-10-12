@@ -50,7 +50,7 @@
         <mockwebserver.version>2.1.0</mockwebserver.version>
         <maven-plugin-plugin.version>3.4</maven-plugin-plugin.version>
         <!-- Matching Maven plugin norm rather than Brooklyn norm -->
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <surefire.version>2.18.1</surefire.version>
     </properties>
 
